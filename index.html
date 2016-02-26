@@ -1,0 +1,124 @@
+<!doctype html>
+<!--[if lt IE 7]>
+<html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>
+<html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>
+<html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <title>SnowMobile Monitor</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" href="pageResource?page=custompage_snowmobile&location=style/animate.css" />
+    <link rel="stylesheet" href="pageResource?page=custompage_snowmobile&location=style/bootstrap.min.css">
+	<link rel="stylesheet" href="pageResource?page=custompage_snowmobile&location=style/main.css">
+	<link rel="stylesheet" href="pageResource?page=custompage_snowmobile&location=style/style.css">
+	<link rel="stylesheet" href="pageResource?page=custompage_snowmobile&location=style/dropbox.css">
+	
+ 
+	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+	<script type="text/javascript" src="https://www.google.com/uds/?file=visualization&amp;v=1&amp;hl=fr&amp;packages=corechart&amp;async=2"></script>
+	<link type="text/css" href="https://www.google.com/uds/api/visualization/1.0/ff67c3772da186a412ae3231c32409e9/ui+fr.css" rel="stylesheet">
+	<script type="text/javascript" src="https://www.google.com/uds/api/visualization/1.0/ff67c3772da186a412ae3231c32409e9/format+fr,default+fr,ui+fr,corechart+fr.I.js"></script>
+	<link href="https://ajax.googleapis.com/ajax/static/modules/gviz/1.0/core/tooltip.css" rel="stylesheet" type="text/css">
+		
+		
+</head>
+<body ng-app="snowmobilemonitor">
+
+<center>
+	<table><tr><td><h1>Snow Mobile</h1></td><td rowspan="2"><img src="pageResource?page=custompage_snowmobile&location=img/snowmobile.jpg" width="150" heigth="150" /></td></tr>
+		<tr><td style="font-size:0.8em">V1.0</td></tr>
+	</table>
+</center>
+
+
+
+
+
+<div class="col-lg-12">
+	<div class="bs-component"  ng-controller="SnowMobileController as snowctrl">
+	    
+		<legend class="text-primary"><span class="glyphicon glyphicon-th"></span>Information</legend>
+		<table >
+			<tr>
+			<td>Message:</td><td>{{snowctrl.errormessage}}</td></tr>
+			<td>Database:</td><td>{{snowctrl.DatabaseProductName}} ({{snowctrl.DatabaseProductVersion}}) :  {{snowctrl.DatabaseMajorVersion}}.{{snowctrl.DatabaseMinorVersion}}</td></tr>
+		</table>
+		
+		<legend class="text-primary"><span class="glyphicon glyphicon-th"></span>Data model</legend>
+		<div class="panel panel-primary">
+			<div class="explanation">
+			Upload your bdm to update the database.
+			</div>
+			
+			<div ng-file-drop ng-model="files"
+						class="drop-box ng-isolate-scope ng-valid ng-dirty"
+						drag-over-class="{accept:'dragover', reject:'dragover-err', delay:100}"
+						multiple="true" allow-dir="false">Drop BDM.zip to be upload here</div>
+			<div ng-no-file-drop class="drop-box" style="display: none;">File Drop is not supported for this browser</div>
+						
+			File loaded : {{snowctrl.bdmfile}}<br>
+						 
+			<div class="alert alert-danger" role="alert" ng-show="snowctrl.errormessage.length > 0">{{snowctrl.errormessage}}</div>
+			<!-- <span style="color:red">{{timetrackerctrl.errormessage}}</span>-->
+			
+			
+			<div id="calculupdatewait" style="background-color:green;color: #FFFFFF;">Please wait, collect in progress</div>
+		
+						
+			<button id="calculUpdate" ng-click="snowctrl.calculupdate()" class="btn btn-info btn-xs">Calcul Update</button>
+			<table >
+			<tr>
+			<td style="padding: 15px;">
+			<h3>Sql Script</h3>
+			<textarea rows="30" cols="100" ng_model="snowctrl.sqlupdate"></textarea>
+			</td>
+			<td style="padding: 15px;">
+			<h3>Delta</h3>
+			<textarea rows="30" cols="100" ng_model="snowctrl.deltamessage"></textarea>
+			</td>
+			</tr>
+			<tr>
+			<td style="padding: 15px;" colspan="2">
+			<h3>Details</h3>
+			<textarea rows="30" cols="220" ng_model="snowctrl.message"></textarea>
+			</td>
+			</tr>
+			</table>
+			
+			
+			
+		</div>
+	</div>
+			
+</div>
+	
+	
+
+
+
+<!-- Third party dependencies -->
+
+<script src="pageResource?page=custompage_snowmobile&location=3rd-party/jquery.min.js"></script>
+
+<script src="pageResource?page=custompage_snowmobile&location=3rd-party/angular.min.js"></script>
+
+<script src="pageResource?page=custompage_snowmobile&location=3rd-party/angular-resource.min.js"></script>
+<script src="pageResource?page=custompage_snowmobile&location=3rd-party/angular-cookies.min.js"></script>
+
+<script src="pageResource?page=custompage_snowmobile&location=3rd-party/bootstrap/js/bootstrap.min.js"></script>
+<script src="pageResource?page=custompage_snowmobile&location=3rd-party/angular-bootstrap-tpls.min.js"></script>
+<script src="pageResource?page=custompage_snowmobile&location=3rd-party/angular-file-upload.js"></script> 
+<script src="pageResource?page=custompage_snowmobile&location=3rd-party/ng-google-chart.js"></script> 
+<script	src="pageResource?page=custompage_snowmobile&location=js/angular-file-upload-shim.min.js"></script>
+<script	src="pageResource?page=custompage_snowmobile&location=js/angular-file-upload.min.js"></script>
+
+<!-- Application dependencies -->
+<script src="pageResource?page=custompage_snowmobile&location=snowmobilemonitor.js"></script>
+
+</body>
+</html>		
