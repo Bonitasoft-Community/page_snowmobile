@@ -29,6 +29,7 @@ import org.jboss.logging.Logger;
 import com.bonitasoft.custompage.snowmobile.BdmBusinessObject.BdmListOfFields;
 import com.bonitasoft.custompage.snowmobile.JdbcTable.JdbcColumn;
 import com.bonitasoft.custompage.snowmobile.JdbcTable.TableListOfColums;
+import com.bonitasoft.custompage.snowmobile.OperationStatus.TypeMsg;
 
 public class SnowMobileAccess {
 
@@ -299,7 +300,7 @@ public class SnowMobileAccess {
         final GeneratorSql generatorSql = new GeneratorSql(parametersCalcul, bdmContent, jdbcModel, operationStatus);
         final Map<String, JdbcTable> mapMetaModelTable = jdbcModel.getSetTables();
 
-        operationStatus.addDeltaMsg(null, null, "Database : " + jdbcModel.getDatabaseProductName());
+        operationStatus.addDeltaMsg(null, null, "Database : " + jdbcModel.getDatabaseProductName(), TypeMsg.INFO);
         operationStatus.addSqlPreUpdate("-- Database : " + jdbcModel.getDatabaseProductName());
 
         // -------------------- First pass : generate all table. This is
@@ -316,7 +317,7 @@ public class SnowMobileAccess {
             final JdbcTable jdbcTable = mapMetaModelTable.get(bdmBusinessObject.getSqlTableName());
             if (jdbcTable == null) {
                 // the table does not exist : generate it !
-                operationStatus.addDeltaMsg(bdmBusinessObject, null, "Generate table");
+                operationStatus.addDeltaMsg(bdmBusinessObject, null, "Generate table", TypeMsg.ADD);
                 generatorSql.sqlGenerateTable(bdmBusinessObject);
 
                 // add the table now !
@@ -397,10 +398,10 @@ public class SnowMobileAccess {
                         // two case : it maybe a field which change to a
                         // collection
                         if (jdbcColumn != null) {
-                            operationStatus.addDeltaMsg(bdmBusinessObject, bdmField, "Field to Collection");
+                            operationStatus.addDeltaMsg(bdmBusinessObject, bdmField, "Field to Collection", TypeMsg.ALTER);
                             generatorSql.sqlColumnToCollection(bdmField);
                         } else {
-                            operationStatus.addDeltaMsg(bdmBusinessObject, bdmField, "New Collection");
+                            operationStatus.addDeltaMsg(bdmBusinessObject, bdmField, "New Collection", TypeMsg.ADD);
                             generatorSql.sqlCreateCollection(bdmField);
                         }
                         continue;
@@ -417,7 +418,7 @@ public class SnowMobileAccess {
                         label = "New composition field";
                     }
 
-                    operationStatus.addDeltaMsg(bdmBusinessObject, bdmField, label);
+                    operationStatus.addDeltaMsg(bdmBusinessObject, bdmField, label, TypeMsg.ADD);
                     generatorSql.sqlCreateColumn(bdmField, false);
                     // attention : this is maybe a OLD collection ? This is
                     // managed after.
@@ -467,7 +468,7 @@ public class SnowMobileAccess {
                     generatorSql.sqlCreateForeignConstraint(bdmField, false);
                 }
                 if (deltaMsg != null) {
-                    operationStatus.addDeltaMsg(bdmBusinessObject, bdmField, headerMsg + deltaMsg);
+                    operationStatus.addDeltaMsg(bdmBusinessObject, bdmField, headerMsg + deltaMsg, TypeMsg.ALTER);
                 } else {
                     operationStatus.addMsg(headerMsg + "identical");
                 }
@@ -539,7 +540,7 @@ public class SnowMobileAccess {
             // composition or not) then the _order must be kept
             final HashSet<String> mapBdmIsReferencedInFather = new HashSet<String>();
             for (final BdmBusinessObject bdmBusinessObjectFather : bdmBusinessObject.getBusinessFather().values()) {
-                String deltaMsg = "";
+                
                 final BdmField referenceBdmFieldFather = bdmBusinessObjectFather.getFieldReference(bdmBusinessObject.getName());
                 if (referenceBdmFieldFather != null && referenceBdmFieldFather.isCollection()) {
                     String colNameOrder = referenceBdmFieldFather.getSqlColName();
@@ -556,7 +557,7 @@ public class SnowMobileAccess {
 
                     //
                     if (mapColums.get(bdmBusinessObjectFather.getSqlTableName() + GeneratorSql.cstSuffixColumnPid) == null) {
-                        deltaMsg += "Add COMPOSITION from[" + bdmBusinessObjectFather.getName() + "]";
+                    	String deltaMsg = "Add COMPOSITION from[" + bdmBusinessObjectFather.getName() + "]";
                         final BdmField bdmField = new BdmField(bdmBusinessObject);
                         bdmField.name = bdmBusinessObjectFather.getSqlTableName();
                         bdmField.fieldType = "LONG";
@@ -576,6 +577,9 @@ public class SnowMobileAccess {
                                                                                    // then
                                                                                    // created
                         bdmField.referenceSqlTable = bdmBusinessObjectFather.getSqlTableName();
+                        
+                        operationStatus.addDeltaMsg(bdmBusinessObject, null, deltaMsg, TypeMsg.ADD);
+
                         generatorSql.sqlCreateColumn(bdmField, false);
                     }
                     // the order has the same name as the table...
@@ -585,11 +589,13 @@ public class SnowMobileAccess {
                     }
                     colNameOrder += GeneratorSql.cstSuffixColumnOrder;
                     if (mapColums.get(colNameOrder) == null) {
-                        deltaMsg += "Add COMPOSITION_order from[" + bdmBusinessObjectFather.getName() + "]";
+                    	String deltaMsg = ", Add COMPO_order from[" + bdmBusinessObjectFather.getName() + "]";
                         final BdmField bdmField = new BdmField(bdmBusinessObject);
                         bdmField.name = colNameOrder;
                         bdmField.fieldType = "INTEGER";
                         bdmField.nullable = true;
+                        operationStatus.addDeltaMsg(bdmBusinessObject, null, deltaMsg, TypeMsg.ADD);
+
                         generatorSql.sqlCreateColumn(bdmField, false);
                         // reference this new _order fields please
                         mapBdmIsReferencedInFather.add(colNameOrder);
@@ -602,9 +608,11 @@ public class SnowMobileAccess {
                     // the parent ==> remove the collection composition field
                     if (mapColums.get(bdmBusinessObjectFather.getSqlTableName() + GeneratorSql.cstSuffixColumnPid) != null) {
                         final JdbcColumn jdbcColum = mapColums.get(bdmBusinessObjectFather.getSqlTableName() + GeneratorSql.cstSuffixColumnPid);
-                        deltaMsg += "Remove  COMPOSITION_pid from[" + bdmBusinessObjectFather.getName() + "]";
+                        String deltaMsg = "Remove COMPOSITION_pid from[" + bdmBusinessObjectFather.getName() + "]";
                         // find the constraint on the field
                         // bdmBusinessObjectFather.getSqlTableName()+"_pid"
+                        operationStatus.addDeltaMsg(bdmBusinessObject, null, deltaMsg, TypeMsg.DROP);
+
                         if (jdbcColum.contraintsName != null) {
                             generatorSql.sqlDropConstraint(jdbcColum.getJdbcTable().getTableName(), jdbcColum.contraintsName);
                         }
@@ -614,9 +622,7 @@ public class SnowMobileAccess {
                     // ( ! ) MINUS _pid
 
                 }
-                if (deltaMsg.length() > 0) {
-                    operationStatus.addDeltaMsg(bdmBusinessObject, null, deltaMsg);
-                }
+               
 
             }
             // ok, last operation, purge all _order field now
@@ -640,7 +646,7 @@ public class SnowMobileAccess {
                     // field name
                     final BdmField bdmField = bdmBusinessObject.getFieldBySqlColumnName(jdbcTableCollection.getChildTableName());
                     if (bdmField == null || !bdmField.isCollection()) {
-                        operationStatus.addDeltaMsg(bdmBusinessObject, bdmField, "Drop collection");
+                        operationStatus.addDeltaMsg(bdmBusinessObject, bdmField, "Drop collection", TypeMsg.DROP);
                         generatorSql.sqlDropTable(jdbcTableCollection.getTableName());
                     }
                 }
@@ -680,7 +686,7 @@ public class SnowMobileAccess {
             if (jdbcTable != null) {
                 for (final JdbcColumn jdbcColumn : jdbcTable.getListColumns()) {
                     if (bdmBusinessObject.getFieldBySqlColumnName(jdbcColumn.colName) == null && !listOfCompositionField.contains(jdbcColumn.colName)) {
-                        operationStatus.addDeltaMsg(bdmBusinessObject, null, "Drop column [" + jdbcColumn.colName + "]");
+                        operationStatus.addDeltaMsg(bdmBusinessObject, null, "Drop column [" + jdbcColumn.colName + "]", TypeMsg.DROP);
                         if (jdbcColumn.contraintsName != null) {
                             generatorSql.sqlDropConstraint(jdbcTable.getTableName(), jdbcColumn.contraintsName);
                         }
@@ -721,6 +727,8 @@ public class SnowMobileAccess {
             }
 
             if (!setTableFromModel.contains(tableName)) {
+            	  operationStatus.addDeltaMsg(null, null, "Drop table["+tableName+"]", TypeMsg.DROP);
+
                 generatorSql.sqlDropTable(tableName, parametersCalcul.commentExtraDropTables);
             }
         }
@@ -812,10 +820,10 @@ public class SnowMobileAccess {
             if (tableItem == null) {
                 // create it !
                 if (isIndex) {
-                    operationStatus.addDeltaMsg(bdmBusinessObject, null, "Create index[" + bdmItem.name + "]");
+                    operationStatus.addDeltaMsg(bdmBusinessObject, null, "Create index[" + bdmItem.name + "]", TypeMsg.ADD);
                     generatorSql.sqlCreateIndex(bdmItem);
                 } else {
-                    operationStatus.addDeltaMsg(bdmBusinessObject, null, "Create Constraint[" + bdmItem.name + "]");
+                    operationStatus.addDeltaMsg(bdmBusinessObject, null, "Create Constraint[" + bdmItem.name + "]", TypeMsg.ADD);
                     generatorSql.sqlCreateConstraint(bdmItem);
                 }
             } else {
@@ -823,11 +831,11 @@ public class SnowMobileAccess {
                     // change it !
                     if (isIndex) {
                         operationStatus.addDeltaMsg(bdmBusinessObject, null,
-                                "Index change[" + bdmItem.name + "] : " + tableItem.toString() + "->" + bdmItem.toString());
+                                "Index change[" + bdmItem.name + "] : " + tableItem.toString() + "->" + bdmItem.toString(), TypeMsg.ALTER);
                         generatorSql.sqlDropIndex(bdmItem.getBusinessObject().getSqlTableName(), bdmItem.name);
                         generatorSql.sqlCreateIndex(bdmItem);
                     } else {
-                        operationStatus.addDeltaMsg(bdmBusinessObject, null, "Constraints change[" + bdmItem.name + "]");
+                        operationStatus.addDeltaMsg(bdmBusinessObject, null, "Constraints change[" + bdmItem.name + "]", TypeMsg.ALTER);
                         generatorSql.sqlDropConstraint(bdmBusinessObject.getSqlTableName(), bdmItem.name);
                         generatorSql.sqlCreateConstraint(bdmItem);
                     }
@@ -844,10 +852,10 @@ public class SnowMobileAccess {
             }
             if (!exist) {
                 if (isIndex) {
-                    operationStatus.addDeltaMsg(bdmBusinessObject, null, "Index Diseapear[" + tableItem.name + "]");
+                    operationStatus.addDeltaMsg(bdmBusinessObject, null, "Index Diseapear[" + tableItem.name + "]", TypeMsg.DROP);
                     generatorSql.sqlDropIndex(bdmBusinessObject.getSqlTableName(), tableItem.name);
                 } else {
-                    operationStatus.addDeltaMsg(bdmBusinessObject, null, "Constraints Diseapear[" + tableItem.name + "]");
+                    operationStatus.addDeltaMsg(bdmBusinessObject, null, "Constraints Diseapear[" + tableItem.name + "]", TypeMsg.DROP);
                     generatorSql.sqlDropConstraint(bdmBusinessObject.getSqlTableName(), tableItem.name);
                 }
             }

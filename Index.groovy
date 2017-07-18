@@ -110,11 +110,30 @@ public class Index implements PageController {
 				logger.info("#### SnowMobile:Groovy Datasource OperationStatus["+operationStatus.getErrorMsg()+"]");
 
 				if (! operationStatus.isError())
-					snowMobileAccess.calculSqlScript(new ParametersCalcul(), operationStatus);
+				{
+					ParametersCalcul parameter = new ParametersCalcul();
+					parameter.commentDropTable = true;
+					parameter.commentDropColumn = true;
+					parameter.commentDropIndex = true;
+					parameter.commentDropConstraint = true;
+					parameter.commentExtraDropTables = true;
 					
+					if ("true".equals(request.getParameter("includeDropTable")))
+					{
+						parameter.commentDropTable = false;
+						parameter.commentExtraDropTables = false;
+					}
+					if ("true".equals(request.getParameter("includeDropContent")))
+					{
+						parameter.commentDropColumn = false;
+						parameter.commentDropIndex = false;
+						parameter.commentDropConstraint = false;
+					}
+					snowMobileAccess.calculSqlScript(parameter, operationStatus);
+				}	
 				resultUpdate.put("sqlupdate", 		operationStatus.getSql());
 				resultUpdate.put("errormessage", 	operationStatus.getErrorMsg());
-				resultUpdate.put("deltamessage", 	operationStatus.getDeltaMsg());
+				resultUpdate.put("deltamessage", 	operationStatus.getDeltaMsgList());
 				resultUpdate.put("message", 	operationStatus.getMsg());
 			}
 			

@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<businessObjectModel>
+    <businessObjects>
+        <businessObject qualifiedName="com.snowmobile.order.OrderHeader">
+            <description></description>
+            <fields>
+                <field type="DATE" length="255" name="orderDate" nullable="true" collection="false"/>
+                <field type="DATE" length="255" name="OrderDelivery" nullable="true" collection="false"/>
+                <relationField type="COMPOSITION" reference="com.snowmobile.order.OrderLine" fetchType="LAZY" name="OrderLine" nullable="true" collection="true"/>
+                <field type="STRING" length="255" name="name" nullable="true" collection="false"/>
+                <field type="TEXT" length="255" name="comment" nullable="true" collection="true"/>
+                <field type="BOOLEAN" length="255" name="Validate" nullable="true" collection="false"/>
+                <field type="LONG" length="255" name="chrononumber" nullable="false" collection="false"/>
+                <field type="FLOAT" length="255" name="amountfloat" nullable="true" collection="false"/>
+                <field type="DOUBLE" length="255" name="amountdouble" nullable="true" collection="false"/>
+                <field type="STRING" length="255" name="newcol" nullable="false" collection="false"/>
+                <field type="STRING" length="255" name="newcolmultiple" nullable="true" collection="true"/>
+                <relationField type="AGGREGATION" reference="com.snowmobile.order.Customer" fetchType="LAZY" name="customerid" nullable="true" collection="false"/>
+            </fields>
+            <uniqueConstraints>
+                <uniqueConstraint name="UNIQUE_CONSTRAINT_1">
+                    <fieldNames>
+                        <fieldName>chrononumber</fieldName>
+                    </fieldNames>
+                </uniqueConstraint>
+                <uniqueConstraint name="UNIQUE_CONSTRAINT_2">
+                    <fieldNames>
+                        <fieldName>name</fieldName>
+                        <fieldName>orderDate</fieldName>
+                    </fieldNames>
+                </uniqueConstraint>
+                <uniqueConstraint name="UNIQUE_CONSTRAINT_3">
+                    <fieldNames>
+                        <fieldName>newcol</fieldName>
+                    </fieldNames>
+                </uniqueConstraint>
+            </uniqueConstraints>
+            <queries/>
+            <indexes>
+                <index name="INDEX_2">
+                    <fieldNames>
+                        <fieldName>chrononumber</fieldName>
+                        <fieldName>name</fieldName>
+                    </fieldNames>
+                </index>
+                <index name="INDEX_3">
+                    <fieldNames>
+                        <fieldName>newcol</fieldName>
+                    </fieldNames>
+                </index>
+            </indexes>
+        </businessObject>
+        <businessObject qualifiedName="com.snowmobile.order.Customer">
+            <fields>
+                <field type="STRING" length="255" name="Name" nullable="false" collection="false"/>
+                <field type="STRING" length="255" name="Adress" nullable="true" collection="true"/>
+                <relationField type="COMPOSITION" reference="com.snowmobile.order.address" fetchType="LAZY" name="adressid" nullable="true" collection="true"/>
+            </fields>
+            <uniqueConstraints/>
+            <queries/>
+            <indexes/>
+        </businessObject>
+        <businessObject qualifiedName="com.snowmobile.order.OrderLine">
+            <fields>
+                <field type="STRING" length="255" name="productname" nullable="true" collection="false"/>
+                <field type="DOUBLE" length="255" name="quantity" nullable="true" collection="false"/>
+            </fields>
+            <uniqueConstraints/>
+            <queries/>
+            <indexes/>
+        </businessObject>
+        <businessObject qualifiedName="com.snowmobile.order.address">
+            <fields>
+                <field type="STRING" length="255" name="street" nullable="true" collection="false"/>
+                <field type="STRING" length="255" name="city" nullable="true" collection="false"/>
+                <field type="STRING" length="255" name="country" nullable="true" collection="false"/>
+            </fields>
+            <uniqueConstraints/>
+            <queries/>
+            <indexes/>
+        </businessObject>
+        <businessObject qualifiedName="com.snowmobile.order.TableToBeDeleteGroupCustomer">
+            <description>This table has to be deleted in the BDM V2, and the tableToDelete_product</description>
+            <fields>
+                <field type="STRING" length="255" name="color" nullable="true" collection="true"/>
+                <field type="STRING" length="255" name="style" nullable="true" collection="false"/>
+                <relationField type="COMPOSITION" reference="com.snowmobile.order.Customer" fetchType="LAZY" name="customer" nullable="true" collection="false"/>
+                <relationField type="AGGREGATION" reference="com.snowmobile.order.address" fetchType="LAZY" name="MainAddress" nullable="true" collection="true"/>
+            </fields>
+            <uniqueConstraints/>
+            <queries/>
+            <indexes/>
+        </businessObject>
+        <businessObject qualifiedName="com.snowmobile.order.tableChange">
+            <description>coltodeleteplease should be deleted</description>
+            <fields>
+                <field type="STRING" length="255" name="sizeproduct" nullable="true" collection="false"/>
+                <field type="STRING" length="255" name="coltodeleteplease" nullable="true" collection="false"/>
+                <field type="INTEGER" length="255" name="colintegertostring" nullable="true" collection="false"/>
+                <field type="STRING" length="10" name="enlargedescription" nullable="true" collection="false"/>
+
+                <relationField type="STRING" length="10" name="string2aggregation" nullable="true" collection="false"/>
+                <relationField type="AGGREGATION" reference="com.snowmobile.order.address" fetchType="LAZY" name="aggregation2long" nullable="true" collection="false"/>
+                <relationField type="STRING" length="10" name="string2composition" nullable="true" collection="false"/>
+                <relationField type="COMPOSITION" reference="com.snowmobile.order.TableToBeDeleteGroupCustomer"" fetchType="LAZY" name="composition2long" nullable="true" collection="false"/>
+
+
+                <relationField type="AGGREGATION" reference="com.snowmobile.order.Customer" fetchType="LAZY" name="mycustomer" nullable="true" collection="false"/>
+                <relationField type="AGGREGATION" reference="com.snowmobile.order.OrderHeader" fetchType="LAZY" name="foreignkeychange" nullable="true" collection="false"/>
+
+                <field type="STRING" length="255" name="single2collect" nullable="true" collection="false"/>
+                <field type="STRING" length="255" name="collect2single" nullable="true" collection="true"/>
+
+                <relationField type="COMPOSITION" reference="com.snowmobile.order.OrderLine" fetchType="LAZY" name="singlecompo2collect" nullable="true" collection="false"/>
+                <relationField type="COMPOSITION" reference="com.snowmobile.order.OrderHeader" fetchType="LAZY" name="collectcompo2single" nullable="true" collection="true"/>
+                <relationField type="AGGREGATION" reference="com.snowmobile.order.OrderHeader" fetchType="LAZY" name="collectaggre2single" nullable="true" collection="true"/>
+				<relationField type="AGGREGATION" reference="com.snowmobile.order.OrderHeader" fetchType="LAZY" name="singleaggre2collect" nullable="true" collection="false"/>
+
+                <relationField type="COMPOSITION" reference="com.snowmobile.order.address" fetchType="LAZY" name="dropsingle" nullable="true" collection="false"/>
+                <relationField type="COMPOSITION" reference="com.snowmobile.order.TableForReferenceCustomer" fetchType="LAZY" name="dropcollection" nullable="true" collection="true"/>
+
+               <relationField type="COMPOSITION" reference="com.snowmobile.order.OrderExpiry" fetchType="LAZY" name="orderexpiry" nullable="true" collection="true"/> -->
+
+ 	    </fields>
+            <uniqueConstraints>
+                <uniqueConstraint name="constrainttobedelet">
+                    <fieldNames>
+                        <fieldName>sizeproduct</fieldName>
+                        <fieldName>enlargedescription</fieldName>
+                    </fieldNames>
+                </uniqueConstraint>
+            </uniqueConstraints>
+            <queries/>
+            <indexes>
+                <index name="INDEX_tobedelete">
+                    <fieldNames>
+                        <fieldName>sizeproduct</fieldName>
+                        <fieldName>coltodeleteplease</fieldName>
+                        <fieldName>colintegertostring</fieldName>
+                    </fieldNames>
+                </index>
+                <index name="IndexChange">
+                    <fieldNames>
+                        <fieldName>sizeproduct</fieldName>
+                    </fieldNames>
+                </index>
+            </indexes>
+        </businessObject>
+        <businessObject qualifiedName="com.snowmobile.order.TableForReferenceCustomer">
+            <fields>
+                <relationField type="AGGREGATION" reference="com.snowmobile.order.Customer" fetchType="LAZY" name="customer" nullable="true" collection="false"/>
+                <field type="STRING" length="255" name="name" nullable="true" collection="false"/>
+            </fields>
+            <uniqueConstraints/>
+            <queries/>
+            <indexes/>
+        </businessObject>
+        <businessObject qualifiedName="com.snowmobile.order.subtablechange">
+            <fields>
+                <field type="STRING" length="255" name="name" nullable="true" collection="false"/>
+            </fields>
+            <uniqueConstraints/>
+            <queries/>
+            <indexes/>
+        </businessObject>
+		
+		<businessObject qualifiedName="com.snowmobile.order.OrderExpiry">
+	            <description></description>
+	            <fields>
+	                <field type="DATE" length="255" name="orderDate" nullable="true" collection="false"/>
+	                <field type="TEXT" length="255" name="comment" nullable="true" collection="true"/>
+	            </fields>
+        </businessObject>
+    </businessObjects>
+</businessObjectModel>

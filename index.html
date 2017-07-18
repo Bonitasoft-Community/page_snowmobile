@@ -24,14 +24,26 @@
 	<link type="text/css" href="https://www.google.com/uds/api/visualization/1.0/ff67c3772da186a412ae3231c32409e9/ui+fr.css" rel="stylesheet">
 	<script type="text/javascript" src="https://www.google.com/uds/api/visualization/1.0/ff67c3772da186a412ae3231c32409e9/format+fr,default+fr,ui+fr,corechart+fr.I.js"></script>
 	<link href="https://ajax.googleapis.com/ajax/static/modules/gviz/1.0/core/tooltip.css" rel="stylesheet" type="text/css">
-		
-		
+
+<style>
+.Loading {
+    display: inline-block;
+    vertical-align: middle;
+    background-position: center;
+    background:no-repeat;
+    background-image: url('data:image/gif;base64,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');
+    width:20px;
+    height:20px;
+    margin-top:6px;
+    margin-right:7px;
+}
+</style>		
 </head>
 <body ng-app="snowmobilemonitor">
 
 <center>
 	<table><tr><td><h1>Snow Mobile</h1></td><td rowspan="2"><img src="pageResource?page=custompage_snowmobile&location=img/snowmobile.jpg" width="150" heigth="150" /></td></tr>
-		<tr><td style="font-size:0.8em">V1.0</td></tr>
+		<tr><td style="font-size:0.8em">V1.1</td></tr>
 	</table>
 </center>
 
@@ -67,29 +79,72 @@
 			<!-- <span style="color:red">{{timetrackerctrl.errormessage}}</span>-->
 			
 			
-			<div id="calculupdatewait" style="background-color:green;color: #FFFFFF;">Please wait, collect in progress</div>
-		
-						
-			<button id="calculUpdate" ng-click="snowctrl.calculupdate()" class="btn btn-info btn-xs">Calcul Update</button>
-			<table >
-			<tr>
-			<td style="padding: 15px;">
-			<h3>Sql Script</h3>
-			<textarea rows="30" cols="100" ng_model="snowctrl.sqlupdate"></textarea>
-			</td>
-			<td style="padding: 15px;">
-			<h3>Delta</h3>
-			<textarea rows="30" cols="100" ng_model="snowctrl.deltamessage"></textarea>
-			</td>
-			</tr>
-			<tr>
-			<td style="padding: 15px;" colspan="2">
-			<h3>Details</h3>
-			<textarea rows="30" cols="220" ng_model="snowctrl.message"></textarea>
-			</td>
-			</tr>
-			</table>
+
 			
+			
+			<!--  parameters -->
+			<div class="row">
+				<div class="col-lg-1">
+				</div>
+				<div class="col-lg-5">
+					<div class="panel panel-info">
+						<div class="panel-heading">Parameters</div>
+						<div>
+							<table style="border-spacing: 10px; border-collapse: separate;">
+								<tr><td>Drop Table:</td><td><input type="checkbox" ng-model="snowctrl.includeDropTable">Include in SQL script</td><td>Drops table will be in included</tr>
+								<tr><td>Drop Content:</td><td><input type="checkbox" ng-model="snowctrl.includeDropContent">Include in SQL script</td><td>Internal drops of columns, constraints, index</tr>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<p>
+			<table style="border-spacing: 20px; border-collapse: separate;">
+				<tr><td >
+					<button id="calculUpdate" ng-click="snowctrl.calculupdate()" class="btn btn-info" ng-disabled="snowctrl.inprogress">Calcul Update</button>
+				</td><td>
+					<div ng-show="snowctrl.inprogress">
+						<span class="Loading">.</span>Please wait, calcul in progress
+					</div>
+				</td></tr>
+			</table>
+
+			
+			<h3><a href="#" ng-click="snowctrl.showSqlScript = ! snowctrl.showSqlScript" style="text-decoration:none">					
+	  				<span ng-show="snowctrl.showSqlScript" class="glyphicon glyphicon-chevron-down" style="font-size: 18px;"></span>
+					<span ng-show="! snowctrl.showSqlScript" class="glyphicon glyphicon-chevron-right"  style="font-size: 18px;"></span>
+			</a>Sql Script</h3>
+			<div ng-show="snowctrl.showSqlScript">
+				<textarea ng_model="snowctrl.sqlupdate" style="margin: 2%;width: 96%;height: 400px;"></textarea>
+			</div>
+			
+			<h3><a href="#" ng-click="snowctrl.showDelta = ! snowctrl.showDelta" style="text-decoration:none">					
+	  				<span ng-show="snowctrl.showDelta" class="glyphicon glyphicon-chevron-down" style="font-size: 18px;"></span>
+					<span ng-show="! snowctrl.showDelta" class="glyphicon glyphicon-chevron-right"  style="font-size: 18px;"></span>
+			</a>Delta</h3>
+			<div ng-show="snowctrl.showDelta">
+			<!-- <div style="margin: 2%;width: 96%;" ng-bind-html="snowctrl.deltamessage">-->
+				<div style="margin: 2%;width: 96%;">
+					<table  style="width: 100%">
+						<tbody ng-repeat="msginfo in snowctrl.deltamessage track by $index">
+								<tr style="background-color: {{msginfo.bgc}}">
+									<td>{{msginfo.msg}}</td>
+									<td>{{msginfo.obj}}</td>
+								</tr>
+						</tbody>
+					</table>
+				</div>			
+			</div>
+
+			<h3><a href="#" ng-click="snowctrl.showDetail = ! snowctrl.showDetail" style="text-decoration:none">					
+	  				<span ng-show="snowctrl.showDetail" class="glyphicon glyphicon-chevron-down" style="font-size: 18px;"></span>
+					<span ng-show="! snowctrl.showDetail" class="glyphicon glyphicon-chevron-right"  style="font-size: 18px;"></span>
+			</a>Details</h3>
+			<div ng-show="snowctrl.showDetail">
+				<!--  <textarea rows="30" cols="220" ng_model="snowctrl.message"></textarea> -->
+				<textarea ng_model="snowctrl.message" style="margin: 2%;width: 96%;height: 400px;"></textarea>
+			</div>
 			
 			
 		</div>
@@ -116,6 +171,8 @@
 <script src="pageResource?page=custompage_snowmobile&location=3rd-party/ng-google-chart.js"></script> 
 <script	src="pageResource?page=custompage_snowmobile&location=js/angular-file-upload-shim.min.js"></script>
 <script	src="pageResource?page=custompage_snowmobile&location=js/angular-file-upload.min.js"></script>
+
+<script src="pageResource?page=custompage_ping&location=3rd-party/angular-sanitize.min.js"></script> 
 
 <!-- Application dependencies -->
 <script src="pageResource?page=custompage_snowmobile&location=snowmobilemonitor.js"></script>

@@ -6,7 +6,7 @@
 (function() {
 
 
-var appCommand = angular.module('snowmobilemonitor', ['googlechart', 'ui.bootstrap','angularFileUpload']);
+var appCommand = angular.module('snowmobilemonitor', ['googlechart', 'ui.bootstrap','ngSanitize', 'angularFileUpload']);
 
 // Constant used to specify resource base path (facilitates integration into a Bonita custom page)
 appCommand.constant('RESOURCE_PATH', 'pageResource?page=custompage_snowmobilemonitor&location=');
@@ -27,6 +27,65 @@ appCommand.controller('SnowMobileController',
 		
 		this.bdmfile ="";
 	  	this.errormessage="";
+		this.inprogress=false;
+		this.includeDropTable=true;
+		this.includeDropContent=true;
+		
+		this.showSqlScript=true;
+		this.showDelta=true;
+		this.showDetail=true;
+		
+		this.info = function(  )
+		{
+			var self=this;
+
+			self.inprogress=true;
+			
+			var url='?page=custompage_snowmobile&action=info';
+			$http.get( url )
+					.success( function ( jsonResult ) {		
+								self.DatabaseMajorVersion					= jsonResult.DatabaseMajorVersion;
+								self.DatabaseMinorVersion					= jsonResult.DatabaseMinorVersion;
+								self.DatabaseProductName					= jsonResult.DatabaseProductName;
+								self.DatabaseProductVersion					= jsonResult.DatabaseProductVersion;
+								self.errormessage					= jsonResult.errormessage;
+								self.inprogress						= false;
+								}
+					)
+					.error( function ( result ) {
+								self.errormessage					= jsonResult.errormessage;
+								self.inprogress						= false;
+								alert('error during get infocalcul update');
+								}
+								
+					);		
+		};
+		this.info();
+
+		
+		this.calculupdate = function(  )
+		{
+			var self=this;
+			self.inprogress						= true;
+			var url='?page=custompage_snowmobile&action=calculupdate&bdmfile='+this.bdmfile+"&includeDropTable="+this.includeDropTable+"&includeDropContent="+this.includeDropContent;
+		
+				
+			$http.get( url )
+				.success( function ( jsonResult ) {		
+						console.log("history",jsonResult);
+						self.sqlupdate 					= jsonResult.sqlupdate;
+						self.errormessage 				= jsonResult.errormessage; 	
+						self.deltamessage				= jsonResult.deltamessage;
+						self.message					= jsonResult.message
+						self.inprogress						= false;
+							})
+				.error( function ( result ) {
+						self.inprogress						= false;
+						alert('error during calcul update');
+							});		
+		  // retrieve the list of process
+		};
+		
 		
 		var me = this;
 		$scope.$watch('files', function() {
@@ -49,65 +108,6 @@ appCommand.controller('SnowMobileController',
 				});
 			}
 		});  
-		
-		this.info = function(  )
-		{
-
-			var url='?page=custompage_snowmobile&action=info';
-				var self=this;
-				$http.get( url )
-					.success( function ( jsonResult ) {		
-								self.DatabaseMajorVersion					= jsonResult.DatabaseMajorVersion;
-								self.DatabaseMinorVersion					= jsonResult.DatabaseMinorVersion;
-								self.DatabaseProductName					= jsonResult.DatabaseProductName;
-								self.DatabaseProductVersion					= jsonResult.DatabaseProductVersion;
-								self.errormessage					= jsonResult.errormessage;
-								}
-					)
-					.error( function ( result ) {
-								self.errormessage					= jsonResult.errormessage;
-								alert('error during get infocalcul update');
-								}
-								
-					);		
-		};
-		
-		
-		this.info();
-		
-		this.calculupdate = function(  )
-		{
-				$('#calculupdatewait').show();
-				var url='?page=custompage_snowmobile&action=calculupdate&bdmfile='+this.bdmfile;
-				
-				var self=this;
-				$http.get( url )
-					.success( function ( jsonResult ) {		
-									
-									console.log("history",jsonResult);
-									self.sqlupdate 					= jsonResult.sqlupdate;
-									self.errormessage 				= jsonResult.errormessage; 	
-									self.deltamessage				= jsonResult.deltamessage;
-									self.message					= jsonResult.message
-									$('#calculupdatewait').hide();
-									}
-							)
-					.error( function ( result ) {
-									alert('error during calcul update');
-									$('#calculupdatewait').hide();
-									}
-									
-					);		
-		  // retrieve the list of process
-		};
-		
 });
-	
-
-		
-		
-	
-	
-	
 	
 })();
