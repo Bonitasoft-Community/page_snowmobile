@@ -36,12 +36,11 @@ import org.bonitasoft.engine.exception.DeletionException;
 import org.bonitasoft.engine.exception.ServerAPIException;
 import org.bonitasoft.engine.exception.UnknownAPITypeException;
 
-import com.bonitasoft.engine.api.TenantAPIAccessor;
+import org.bonitasoft.engine.api.TenantAPIAccessor;
 import org.bonitasoft.engine.session.APISession;
 import org.bonitasoft.engine.api.CommandAPI;
 import org.bonitasoft.engine.api.ProcessAPI;
 import org.bonitasoft.engine.api.IdentityAPI;
-import com.bonitasoft.engine.api.PlatformMonitoringAPI;
 import org.bonitasoft.engine.search.SearchOptionsBuilder;
 import org.bonitasoft.engine.bpm.flownode.ActivityInstanceSearchDescriptor;
 import org.bonitasoft.engine.bpm.flownode.ArchivedActivityInstanceSearchDescriptor;
@@ -101,7 +100,7 @@ public class Index implements PageController {
 				
 				APISession apiSession = pageContext.getApiSession()
 				ProcessAPI processAPI = TenantAPIAccessor.getProcessAPI(apiSession);
-				snowMobileAccess.setContext( apiSession,  processAPI);
+				snowMobileAccess.setContext( apiSession, pageResourceProvider.getPageDirectory(), processAPI);
 				
 				snowMobileAccess.setBdmFromFile(bdmfile, operationStatus);
 				logger.info("#### SnowMobile:Groovy BdmFile OperationStatus["+operationStatus.getErrorMsg()+"]");
@@ -194,25 +193,24 @@ public class Index implements PageController {
 	 * 
 	 */
 	private void runTheBonitaIndexDoGet(HttpServletRequest request, HttpServletResponse response, PageResourceProvider pageResourceProvider, PageContext pageContext) {
-				try {
-						def String indexContent;
-						pageResourceProvider.getResourceAsStream("index.html").withStream { InputStream s->
-								indexContent = s.getText()
-						}
-						
-						def String pageResource="pageResource?&page="+ request.getParameter("page")+"&location=";
-						
-						indexContent= indexContent.replace("@_USER_LOCALE_@", request.getParameter("locale"));
-						indexContent= indexContent.replace("@_PAGE_RESOURCE_@", pageResource);
-						
-						response.setCharacterEncoding("UTF-8");
-						PrintWriter out = response.getWriter();
-						out.print(indexContent);
-						out.flush();
-						out.close();
-				} catch (Exception e) {
-						e.printStackTrace();
-				}
+		try {
+			def String indexContent;
+			pageResourceProvider.getResourceAsStream("index.html").withStream { InputStream s->
+					indexContent = s.getText()
+			}
+			
+			// def String pageResource="pageResource?&page="+ request.getParameter("page")+"&location=";
+			// indexContent= indexContent.replace("@_USER_LOCALE_@", request.getParameter("locale"));
+			// indexContent= indexContent.replace("@_PAGE_RESOURCE_@", pageResource);
+			
+			response.setCharacterEncoding("UTF-8");
+			PrintWriter out = response.getWriter();
+			out.print(indexContent);
+			out.flush();
+			out.close();
+		} catch (Exception e) {
+				e.printStackTrace();
 		}
+	}
 
 }

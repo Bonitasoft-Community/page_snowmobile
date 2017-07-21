@@ -24,7 +24,9 @@ import javax.sql.DataSource;
 
 import org.bonitasoft.engine.api.ProcessAPI;
 import org.bonitasoft.engine.session.APISession;
-import org.jboss.logging.Logger;
+import java.util.logging.Logger;
+
+
 
 import com.bonitasoft.custompage.snowmobile.BdmBusinessObject.BdmListOfFields;
 import com.bonitasoft.custompage.snowmobile.JdbcTable.JdbcColumn;
@@ -56,7 +58,8 @@ public class SnowMobileAccess {
 
     }
 
-    private String temporaryPath = null;
+
+    private File pageDirectory=null;
     /**
      * @param args
      */
@@ -85,9 +88,11 @@ public class SnowMobileAccess {
 
     }
 
-    public void setContext(final APISession session, final ProcessAPI processAPI) {
-        temporaryPath = System.getProperty("bonita.home") + "/client/tenants/" + session.getTenantId() + "/tmp/";
-        logger.info("TemporaryPath [" + temporaryPath + "]");
+    public void setContext(final APISession session, File pageDirectory , final ProcessAPI processAPI) {
+    	this.pageDirectory= pageDirectory;
+       
+		
+        logger.info("PageDirectory [" + pageDirectory + "]");
     }
 
     /**
@@ -102,18 +107,36 @@ public class SnowMobileAccess {
             return;
         }
 
-        String completeBdmFileNameZip = bdmFileNameZip;
-        File file = new File(completeBdmFileNameZip);
-        if (!file.exists())
+        File completeBdmFileNameZip = null;
+        
+		List<String> listParentTmpFile = new ArrayList<String>();
+		try
+		{
+			listParentTmpFile.add( pageDirectory.getCanonicalPath()+"/../../../tmp/");
+			listParentTmpFile.add( pageDirectory.getCanonicalPath()+"/../../");
+		}
+		catch (Exception e)
+		{
+			logger.info("SnowMobileAccess : error get CanonicalPath of pageDirectory["+e.toString()+"]");					
+			return;
+		}
+		for (String pathTemp : listParentTmpFile)
+		{
+			logger.info("SnowMobileAccess : CompleteuploadFile  TEST ["+pathTemp+bdmFileNameZip+"]");	
+			if (bdmFileNameZip.length() > 0 && (new File(pathTemp+bdmFileNameZip)).exists()) {
+				completeBdmFileNameZip=(new File(pathTemp+bdmFileNameZip)).getAbsoluteFile() ;
+				logger.info("SnowMobileAccess : CompleteuploadFile  FOUND ["+completeBdmFileNameZip+"]");					
+			}
+		}
+		
+		
+        
+        
+       
+        if (!completeBdmFileNameZip.exists())
         {
-            completeBdmFileNameZip = temporaryPath + bdmFileNameZip;
-            file = new File(completeBdmFileNameZip);
-            if (!file.exists())
-            {
                 operationStatus.addErrorMsg("file [" + bdmFileNameZip + "] can't be open as it or with [" + completeBdmFileNameZip + "]");
                 return;
-
-            }
         }
 
         boolean foundOneFile = false;
