@@ -24,22 +24,17 @@
 		<link>
 			<name>custompage/7.2.4/Index.groovy</name>
 			<type>1</type>
-			<location>C:/atelier/BPM-SP-7.2.4/workspace/Auckland/bonita_home/client/tenants/1/work/pages/custompage_snowmobile/Index.groovy</location>
+			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-7.2.4/workspace/Auckland/bonita_home/client/tenants/1/work/pages/custompage_snowmobile/Index.groovy</locationURI>
 		</link>
 		<link>
 			<name>custompage/7.2.4/index.html</name>
 			<type>1</type>
-			<location>C:/atelier/BPM-SP-7.2.4/workspace/Auckland/bonita_home/client/tenants/1/work/pages/custompage_snowmobile/index.html</location>
-		</link>
-		<link>
-			<name>custompage/7.2.4/page.properties</name>
-			<type>1</type>
-			<location>C:/atelier/BPM-SP-7.2.4/workspace/Auckland/bonita_home/client/tenants/1/work/pages/custompage_snowmobile/page.properties</location>
+			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-7.2.4/workspace/Auckland/bonita_home/client/tenants/1/work/pages/custompage_snowmobile/index.html</locationURI>
 		</link>
 		<link>
 			<name>custompage/7.2.4/snowmobilemonitor.js</name>
 			<type>1</type>
-			<location>C:/atelier/BPM-SP-7.2.4/workspace/Auckland/bonita_home/client/tenants/1/work/pages/custompage_snowmobile/resources/snowmobilemonitor.js</location>
+			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-7.2.4/workspace/Auckland/bonita_home/client/tenants/1/work/pages/custompage_snowmobile/resources/snowmobilemonitor.js</locationURI>
 		</link>
 		<link>
 			<name>custompage/7.5.2 com/Index.groovy</name>
