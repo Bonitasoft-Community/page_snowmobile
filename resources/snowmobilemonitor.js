@@ -22,7 +22,7 @@ appCommand.constant('RESOURCE_PATH', 'pageResource?page=custompage_snowmobilemon
 	   
 // User app list controller
 appCommand.controller('SnowMobileController', 
-	function ( $http, $scope, $upload) {
+	function ( $http, $scope, $upload, $sce) {
 		$('#calculupdatewait').hide();
 		
 		this.bdmfile ="";
@@ -41,7 +41,9 @@ appCommand.controller('SnowMobileController',
 
 			self.inprogress=true;
 			
-			var url='?page=custompage_snowmobile&action=info';
+			var t = new Date();
+			
+			var url='?page=custompage_snowmobile&action=info&t='+t;
 			$http.get( url )
 					.success( function ( jsonResult ) {		
 								self.DatabaseMajorVersion					= jsonResult.DatabaseMajorVersion;
@@ -67,7 +69,9 @@ appCommand.controller('SnowMobileController',
 		{
 			var self=this;
 			self.inprogress						= true;
-			var url='?page=custompage_snowmobile&action=calculupdate&bdmfile='+this.bdmfile+"&includeDropTable="+this.includeDropTable+"&includeDropContent="+this.includeDropContent;
+			var t = new Date();
+			
+			var url='?page=custompage_snowmobile&action=calculupdate&bdmfile='+this.bdmfile+"&includeDropTable="+this.includeDropTable+"&includeDropContent="+this.includeDropContent+"&t="+t;
 		
 				
 			$http.get( url )
@@ -86,6 +90,12 @@ appCommand.controller('SnowMobileController',
 		  // retrieve the list of process
 		};
 		
+		
+		<!-- Manage the event -->
+		this.getListEvents = function ( listevents ) {
+			console.log("trust "+listevents);
+			return $sce.trustAsHtml( listevents );
+		}
 		
 		var me = this;
 		$scope.$watch('files', function() {

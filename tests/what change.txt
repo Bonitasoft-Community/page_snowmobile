@@ -1,0 +1,14 @@
+------------------------------------ Delta BDM-V2 et tables
+  OrderHeader : 
+  	+ 1 index amountDouble
+  	+ 1 index orderDate
+  OrderLine : 
+  	+ AmountLine
+  	+ ReferenceKey customercontactid (nouvelle table customer contact)
+  
+   Cutomer  : 
+      (- 1 champs adresse, +1 champs address)
+       >>> + 1 Contrainte Name  
+       
+   CustomerContact : NOUVELLE TABLE CustomerId(foreign key) FirstName, LastName, PhoneList (collection)
+   

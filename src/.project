@@ -56,5 +56,15 @@
 			<type>1</type>
 			<location>C:/atelier/BPM-Community-7.5.2/workspace/tomcat/server/temp/bonita_portal_10380@pc-pierre-yves/tenants/1/pages/custompage_snowmobile/resources/snowmobilemonitor.js</location>
 		</link>
+		<link>
+			<name>custompage/7.8.3 0326/Index.groovy</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/procergs/Tomcat-7.7.3/server/temp/bonita_portal_229780@Dragon-Pierre-Yves/tenants/1/pages/custompage_snowmobile/Index.groovy</locationURI>
+		</link>
+		<link>
+			<name>custompage/7.8.3 0326/snowmobilemonitor.js</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/procergs/Tomcat-7.7.3/server/temp/bonita_portal_229780@Dragon-Pierre-Yves/tenants/1/pages/custompage_snowmobile/resources/snowmobilemonitor.js</locationURI>
+		</link>
 	</linkedResources>
 </projectDescription>

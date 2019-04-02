@@ -6,103 +6,103 @@ package com.bonitasoft.custompage.snowmobile;
 
 public class BdmField {
 
-    // None is here to help development, to give a value in case this is not a relation
-    // AGGREGATION is a Foreign Key
-    // COMPOSITION is a child table
-    enum enumRelationType {
-        COMPOSITION, AGGREGATION
-    };
+  // None is here to help development, to give a value in case this is not a relation
+  // AGGREGATION is a Foreign Key
+  // COMPOSITION is a child table
+  enum enumRelationType {
+    COMPOSITION, AGGREGATION
+  };
 
-    /**
-		 *
-		 */
-    public boolean isRelationField;
-    public enumRelationType relationType;
-    public String name;
-    public boolean nullable;
-    public boolean collection;
-    /**
-     * in case of relation, this field is the reference field
-     */
-    public String reference;
-    String referenceSqlTable;
-    public String fieldType;
-    public int fieldLength;
+  /**
+   *
+   */
+  public boolean isRelationField;
+  public enumRelationType relationType;
+  /**
+   * name is too touchy to let it with a public access
+   */
+  private String name;
+  public boolean nullable;
+  public boolean collection;
+  /**
+   * in case of relation, this field is the reference field
+   */
+  public String reference;
+  String referenceSqlTable;
+  public String fieldType;
+  public int fieldLength;
 
-    private final BdmBusinessObject businessObject;
+  private final BdmBusinessObject businessObject;
 
-    public BdmField(final BdmBusinessObject bdmBusinessObject)
-    {
-        businessObject = bdmBusinessObject;
-        assert bdmBusinessObject != null;
-    };
+  public BdmField(final BdmBusinessObject bdmBusinessObject) {
+    businessObject = bdmBusinessObject;
+    assert bdmBusinessObject != null;
+  };
 
-    public String getLogId()
-    {
-        return name + "(" + fieldType
-                + (collection ? "-collection" : "")
-                + ") ";
-    }
+  public void setName( String name )
+  {
+    this.name = JdbcTable.getFormatColName( name );
+  }
+  public String getName()
+  {
+    return name;    
+  }
+  
+  public String getLogId() {
+    return name + "(" + fieldType
+        + (collection ? "-collection" : "")
+        + ") ";
+  }
 
-    @Override
-    public String toString()
-    {
-        return name + "(" + fieldType + ") " + (nullable ? "null" : "") + (collection ? "-collection" : "-notcollection")
-                + (isComposition() ? "-compo" : "-notcompo") + (isAggregation() ? "-aggre" : "-notaggre");
-    }
+  @Override
+  public String toString() {
+    return name + "(" + fieldType + ") " + (nullable ? "null" : "") + (collection ? "-collection" : "-notcollection")
+        + (isComposition() ? "-compo" : "-notcompo") + (isAggregation() ? "-aggre" : "-notaggre");
+  }
 
-    /**
-     * return the column name in lower case
-     *
-     * @return
-     */
-    public String getSqlColName()
-    {
-        return name.toLowerCase() + (isRelationField ? GeneratorSql.cstSuffixColumnPid : "");
-    }
+  /**
+   * return the column name in lower case
+   *
+   * @return
+   */
+  public String getSqlColName() {
+    return name + (isRelationField ? GeneratorSql.cstSuffixColumnPid : "");
+  }
 
-    public String getFieldName()
-    {
-        return name;
-    }
+  public String getFieldName() {
+    return name;
+  }
 
-    public String getSqlCompleteColName()
-    {
-        return businessObject.getSqlTableName() + "." + name.toLowerCase() + (isRelationField ? GeneratorSql.cstSuffixColumnPid : "");
-    }
+  public String getSqlCompleteColName() {
+    return businessObject.getSqlTableName() + "." + name + (isRelationField ? GeneratorSql.cstSuffixColumnPid : "");
+  }
 
-    public String getSqlTableName()
-    {
-        return businessObject.getSqlTableName();
-    }
+  public String getSqlTableName() {
+    return businessObject.getSqlTableName();
+  }
 
-    public String getReference()
-    {
-        return reference;
-    };
+  public String getReference() {
+    return reference;
+  };
 
-    public String getSqlReferenceTable()
-    {
-        return referenceSqlTable == null ? null : referenceSqlTable.toLowerCase();
-    };
+  public String getSqlReferenceTable() {
+    return referenceSqlTable == null ? null : referenceSqlTable.toLowerCase();
+  };
 
-    public BdmBusinessObject getBusinessObject()
-    {
-        return businessObject;
-    }
+  public BdmBusinessObject getBusinessObject() {
+    return businessObject;
+  }
 
-    public boolean isAggregation()
-    {
-        return BdmField.enumRelationType.AGGREGATION.equals(relationType);
-    }
+  public boolean isAggregation() {
+    return BdmField.enumRelationType.AGGREGATION.equals(relationType);
+  }
 
-    public boolean isComposition()
-    {
-        return BdmField.enumRelationType.COMPOSITION.equals(relationType);
-    }
+  public boolean isComposition() {
+    return BdmField.enumRelationType.COMPOSITION.equals(relationType);
+  }
 
-    public boolean isCollection() {
-        return collection;
-    }
+  public boolean isCollection() {
+    return collection;
+  }
 
 }

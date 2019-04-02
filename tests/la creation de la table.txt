@@ -1,0 +1,36 @@
+
+CREATE TABLE orderheader
+(
+  persistenceid bigint NOT NULL,
+  orderdelivery timestamp without time zone,
+  validate boolean,
+  amountdouble double precision,
+  amountfloat real,
+  chrononumber bigint NOT NULL,
+  name character varying(255),
+  orderdate timestamp without time zone,
+  persistenceversion bigint,
+  customerid_pid bigint,
+  
+  CONSTRAINT orderheader_pkey PRIMARY KEY (persistenceid),
+  CONSTRAINT fk_n94rp1m6hn9sd65i41u9xq3v1 FOREIGN KEY (customerid_pid)
+      REFERENCES customer (persistenceid) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT unique_constraint_1 UNIQUE (chrononumber),
+  CONSTRAINT unique_constraint_2 UNIQUE (name, orderdate)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE orderheader
+  OWNER TO postgres;
+
+-- Index: index_2
+
+-- DROP INDEX index_2;
+
+CREATE INDEX index_2
+  ON orderheader
+  USING btree
+  (chrononumber, name COLLATE pg_catalog."default");
+

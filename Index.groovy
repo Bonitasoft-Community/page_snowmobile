@@ -181,7 +181,7 @@ public class Index implements PageController {
 			e.printStackTrace(new PrintWriter(sw));
 			String exceptionDetails = sw.toString();
 			
-			logger.severe("#### LongBoardCustomPage:Groovy LongBoard: getinteger : Exception "+e.toString()+" on  ["+valueParamSt+"] at "+exceptionDetails );
+			logger.severe("#### SnowMobile:Groovy LongBoard: getinteger : Exception "+e.toString()+" on  ["+valueParamSt+"] at "+exceptionDetails );
 			valueParam= defaultValue;
 		}
 		return valueParam;
@@ -198,18 +198,27 @@ public class Index implements PageController {
 			pageResourceProvider.getResourceAsStream("index.html").withStream { InputStream s->
 					indexContent = s.getText()
 			}
-			
+			 File pageDirectory = pageResourceProvider.getPageDirectory();
+	      
 			// def String pageResource="pageResource?&page="+ request.getParameter("page")+"&location=";
 			// indexContent= indexContent.replace("@_USER_LOCALE_@", request.getParameter("locale"));
 			// indexContent= indexContent.replace("@_PAGE_RESOURCE_@", pageResource);
-			
+		   indexContent= indexContent.replace("@_CURRENTTIMEMILIS_@", String.valueOf(System.currentTimeMillis()));
+       indexContent= indexContent.replace("@_PAGEDIRECTORY_@", pageDirectory.getAbsolutePath()) ;
+
 			response.setCharacterEncoding("UTF-8");
 			PrintWriter out = response.getWriter();
 			out.print(indexContent);
 			out.flush();
 			out.close();
 		} catch (Exception e) {
-				e.printStackTrace();
+      StringWriter sw = new StringWriter();
+      e.printStackTrace(new PrintWriter(sw));
+      String exceptionDetails = sw.toString();
+      
+      logger.severe("#### SnowMobile:Groovy LongBoard: getinteger : Exception "+e.toString()+" at "+exceptionDetails );
+    
+		
 		}
 	}
 

@@ -37,13 +37,16 @@
     margin-top:6px;
     margin-right:7px;
 }
-</style>		
+</style>
+<!--  Page Directory: @_PAGEDIRECTORY_@ -->
+
+		
 </head>
 <body ng-app="snowmobilemonitor">
 
 <center>
 	<table><tr><td><h1>Snow Mobile</h1></td><td rowspan="2"><img src="pageResource?page=custompage_snowmobile&location=img/snowmobile.jpg" width="150" heigth="150" /></td></tr>
-		<tr><td style="font-size:0.8em">V1.1</td></tr>
+		<tr><td style="font-size:0.8em">V2.0</td></tr>
 	</table>
 </center>
 
@@ -73,7 +76,7 @@
 						multiple="true" allow-dir="false">Drop BDM.zip to be upload here</div>
 			<div ng-no-file-drop class="drop-box" style="display: none;">File Drop is not supported for this browser</div>
 						
-			File loaded : {{snowctrl.bdmfile}}<br>
+			<!-- File loaded : {{snowctrl.bdmfile}}<br> -->
 						 
 			<div class="alert alert-danger" role="alert" ng-show="snowctrl.errormessage.length > 0">{{snowctrl.errormessage}}</div>
 			<!-- <span style="color:red">{{timetrackerctrl.errormessage}}</span>-->
@@ -129,8 +132,10 @@
 					<table  style="width: 100%">
 						<tbody ng-repeat="msginfo in snowctrl.deltamessage track by $index">
 								<tr style="background-color: {{msginfo.bgc}}">
-									<td>{{msginfo.msg}}</td>
+									<td>{{msginfo.type}}</td>
+									<td><span title="{{msginfo.infoBulle}}">{{msginfo.msg}}</span></td>
 									<td>{{msginfo.obj}}</td>
+									<!-- infobulle is enough and better <td><div ng-bind-html="snowctrl.getListEvents( msginfo.detail )"></div></td> -->
 								</tr>
 						</tbody>
 					</table>
@@ -175,7 +180,7 @@
 <script src="pageResource?page=custompage_snowmobile&location=3rd-party/angular-sanitize.min.js"></script> 
 
 <!-- Application dependencies -->
-<script src="pageResource?page=custompage_snowmobile&location=snowmobilemonitor.js"></script>
+<script src="pageResource?page=custompage_snowmobile&location=snowmobilemonitor.js&t=@_CURRENTTIMEMILIS_@"></script>
 
 </body>
 </html>		
