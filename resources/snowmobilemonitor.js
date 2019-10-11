@@ -90,12 +90,15 @@ appCommand.controller('SnowMobileController',
 		  // retrieve the list of process
 		};
 		
-		
-		<!-- Manage the event -->
-		this.getListEvents = function ( listevents ) {
-			console.log("trust "+listevents);
-			return $sce.trustAsHtml( listevents );
+		// -----------------------------------------------------------------------------------------
+		// tool
+		// -----------------------------------------------------------------------------------------
+
+		this.getHtml = function(listevents, sourceContext) {
+			// console.log("getHtml:Start (r/o) source="+sourceContext);
+			return $sce.trustAsHtml(listevents);
 		}
+
 		
 		var me = this;
 		$scope.$watch('files', function() {
