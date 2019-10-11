@@ -9,7 +9,7 @@
 <html class="no-js"> <!--<![endif]-->
 <head>
     <meta charset="utf-8">
-    <title>SnowMobile Monitor</title>
+    <title>SnowMobile</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width">
     <link rel="stylesheet" href="pageResource?page=custompage_snowmobile&location=style/animate.css" />
@@ -45,8 +45,16 @@
 <body ng-app="snowmobilemonitor">
 
 <center>
-	<table><tr><td><h1>Snow Mobile</h1></td><td rowspan="2"><img src="pageResource?page=custompage_snowmobile&location=img/snowmobile.jpg" width="150" heigth="150" /></td></tr>
-		<tr><td style="font-size:0.8em">V2.0</td></tr>
+	<table>
+		<tr><td><h1>BBD - Snow Mobile</h1></td><td rowspan="2"><img src="pageResource?page=custompage_snowmobile&location=img/snowmobile.jpg" width="150" heigth="150" /></td></tr>
+		<tr><td>
+				<center>
+					<div class="font-style: italic;">
+					The <span style="color: red;font-weight: bold;">B</span>onita <span style="color: red;font-weight: bold;">B</span>DM <span style="color: red;font-weight: bold;">D</span>ifferential&nbsp;
+					</div>
+					V2.1
+				</center>
+		</td></tr>		
 	</table>
 </center>
 
@@ -60,58 +68,64 @@
 		<legend class="text-primary"><span class="glyphicon glyphicon-th"></span>Information</legend>
 		<table >
 			<tr>
-			<td>Message:</td><td>{{snowctrl.errormessage}}</td></tr>
+
 			<td>Database:</td><td>{{snowctrl.DatabaseProductName}} ({{snowctrl.DatabaseProductVersion}}) :  {{snowctrl.DatabaseMajorVersion}}.{{snowctrl.DatabaseMinorVersion}}</td></tr>
 		</table>
 		
 		<legend class="text-primary"><span class="glyphicon glyphicon-th"></span>Data model</legend>
 		<div class="panel panel-primary">
-			<div class="explanation">
-			Upload your bdm to update the database.
-			</div>
+			<table width="100%" style="border-spacing: 20px; border-collapse: separate;">
+			<tr>
+			<td >
+					<div class="explanation">
+					Upload your bdm to update the database.
+					</div>
+					
+					<div ng-file-drop ng-model="files"
+								class="drop-box ng-isolate-scope ng-valid ng-dirty"
+								drag-over-class="{accept:'dragover', reject:'dragover-err', delay:100}"
+								multiple="true" allow-dir="false">Drop BDM.zip to be upload here</div>
+					<div ng-no-file-drop class="drop-box" style="display: none;">File Drop is not supported for this browser</div>
+								
+					<!-- File loaded : {{snowctrl.bdmfile}}<br> -->
+								 
+					<div class="alert alert-danger" role="alert" ng-show="snowctrl.errormessage.length > 20">
+						<div ng-bind-html="snowctrl.getHtml( snowctrl.errormessage)"></div>			
+					</div>
+					
+					<table style="border-spacing: 20px; border-collapse: separate;">
+						<tr><td >
+							<button id="calculUpdate" ng-click="snowctrl.calculupdate()" class="btn btn-info" ng-disabled="snowctrl.inprogress">Calcul Update</button>
+						</td><td>
+							<div ng-show="snowctrl.inprogress">
+								<span class="Loading">.</span>Please wait, calcul in progress
+							</div>
+						</td></tr>
+					</table>
 			
-			<div ng-file-drop ng-model="files"
-						class="drop-box ng-isolate-scope ng-valid ng-dirty"
-						drag-over-class="{accept:'dragover', reject:'dragover-err', delay:100}"
-						multiple="true" allow-dir="false">Drop BDM.zip to be upload here</div>
-			<div ng-no-file-drop class="drop-box" style="display: none;">File Drop is not supported for this browser</div>
-						
-			<!-- File loaded : {{snowctrl.bdmfile}}<br> -->
-						 
-			<div class="alert alert-danger" role="alert" ng-show="snowctrl.errormessage.length > 0">{{snowctrl.errormessage}}</div>
-			<!-- <span style="color:red">{{timetrackerctrl.errormessage}}</span>-->
-			
-			
-
-			
-			
-			<!--  parameters -->
-			<div class="row">
-				<div class="col-lg-1">
-				</div>
-				<div class="col-lg-5">
-					<div class="panel panel-info">
-						<div class="panel-heading">Parameters</div>
-						<div>
-							<table style="border-spacing: 10px; border-collapse: separate;">
-								<tr><td>Drop Table:</td><td><input type="checkbox" ng-model="snowctrl.includeDropTable">Include in SQL script</td><td>Drops table will be in included</tr>
-								<tr><td>Drop Content:</td><td><input type="checkbox" ng-model="snowctrl.includeDropContent">Include in SQL script</td><td>Internal drops of columns, constraints, index</tr>
-							</table>
+					<!-- <span style="color:red">{{timetrackerctrl.errormessage}}</span>-->
+			</td><td>	
+					<!--  parameters -->
+					<div class="row">
+						<div class="col-lg-1">
+						</div>
+						<div class="col-lg-5">
+							<div class="panel panel-info">
+								<div class="panel-heading">Parameters</div>
+								<div>
+									<table style="border-spacing: 10px; border-collapse: separate;">
+										<tr><td>Drop Table:</td><td><input type="checkbox" ng-model="snowctrl.includeDropTable">Include in SQL script</td><td>Drops table will be in included</tr>
+										<tr><td>Drop Content:</td><td><input type="checkbox" ng-model="snowctrl.includeDropContent">Include in SQL script</td><td>Internal drops of columns, constraints, index</tr>
+									</table>
+								</div>
+							</div>
 						</div>
 					</div>
-				</div>
-			</div>
-			
-			<p>
-			<table style="border-spacing: 20px; border-collapse: separate;">
-				<tr><td >
-					<button id="calculUpdate" ng-click="snowctrl.calculupdate()" class="btn btn-info" ng-disabled="snowctrl.inprogress">Calcul Update</button>
-				</td><td>
-					<div ng-show="snowctrl.inprogress">
-						<span class="Loading">.</span>Please wait, calcul in progress
-					</div>
-				</td></tr>
+			</td>
+			</tr>
 			</table>
+			<p>
+			
 
 			
 			<h3><a href="#" ng-click="snowctrl.showSqlScript = ! snowctrl.showSqlScript" style="text-decoration:none">					
@@ -181,6 +195,7 @@
 
 <!-- Application dependencies -->
 <script src="pageResource?page=custompage_snowmobile&location=snowmobilemonitor.js&t=@_CURRENTTIMEMILIS_@"></script>
+
 
 </body>
 </html>		

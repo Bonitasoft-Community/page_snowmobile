@@ -54,6 +54,10 @@ import org.bonitasoft.engine.command.CommandDescriptor;
 import org.bonitasoft.engine.command.CommandCriterion;
 import org.bonitasoft.engine.bpm.flownode.ActivityInstance;
 
+import org.bonitasoft.log.event.BEvent;
+import org.bonitasoft.log.event.BEvent.Level;
+import org.bonitasoft.log.event.BEventFactory;
+
 import com.bonitasoft.custompage.snowmobile.SnowMobileAccess;
 import com.bonitasoft.custompage.snowmobile.OperationStatus;
 import com.bonitasoft.custompage.snowmobile.SnowMobileAccess.ParametersCalcul;
@@ -103,10 +107,10 @@ public class Index implements PageController {
 				snowMobileAccess.setContext( apiSession, pageResourceProvider.getPageDirectory(), processAPI);
 				
 				snowMobileAccess.setBdmFromFile(bdmfile, operationStatus);
-				logger.info("#### SnowMobile:Groovy BdmFile OperationStatus["+operationStatus.getErrorMsg()+"]");
+				logger.info("#### SnowMobile:Groovy BdmFile OperationStatus["+BEventFactory.getHtml(operationStatus.getErrors())+"]");
 				
 				snowMobileAccess.setDatamodelFromDatabaseSource("NotManagedBizDataDS", operationStatus);
-				logger.info("#### SnowMobile:Groovy Datasource OperationStatus["+operationStatus.getErrorMsg()+"]");
+				logger.info("#### SnowMobile:Groovy Datasource OperationStatus["+BEventFactory.getHtml(operationStatus.getErrors())+"]");
 
 				if (! operationStatus.isError())
 				{
@@ -131,7 +135,7 @@ public class Index implements PageController {
 					snowMobileAccess.calculSqlScript(parameter, operationStatus);
 				}	
 				resultUpdate.put("sqlupdate", 		operationStatus.getSql());
-				resultUpdate.put("errormessage", 	operationStatus.getErrorMsg());
+				resultUpdate.put("errormessage", 	BEventFactory.getHtml( operationStatus.getErrors()));
 				resultUpdate.put("deltamessage", 	operationStatus.getDeltaMsgList());
 				resultUpdate.put("message", 	operationStatus.getMsg());
 			}
