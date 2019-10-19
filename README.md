@@ -4,3 +4,7 @@ Give the new BDM version, and the page compare the existing database structure, 
 
 
 <img src="screenshoot_Snowmobile.jpg"/>
+
+# Next improvment
+* Integrate MySql Conversion table. Attention, MYSQL is case Sensitive
+
