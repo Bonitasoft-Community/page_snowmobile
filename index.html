@@ -52,7 +52,7 @@
 					<div class="font-style: italic;">
 					The <span style="color: red;font-weight: bold;">B</span>onita <span style="color: red;font-weight: bold;">B</span>DM <span style="color: red;font-weight: bold;">D</span>ifferential&nbsp;
 					</div>
-					V2.1
+					V2.2
 				</center>
 		</td></tr>		
 	</table>
@@ -65,69 +65,62 @@
 <div class="col-lg-12">
 	<div class="bs-component"  ng-controller="SnowMobileController as snowctrl">
 	    
-		<legend class="text-primary"><span class="glyphicon glyphicon-th"></span>Information</legend>
-		<table >
-			<tr>
-
-			<td>Database:</td><td>{{snowctrl.DatabaseProductName}} ({{snowctrl.DatabaseProductVersion}}) :  {{snowctrl.DatabaseMajorVersion}}.{{snowctrl.DatabaseMinorVersion}}</td></tr>
-		</table>
-		
-		<legend class="text-primary"><span class="glyphicon glyphicon-th"></span>Data model</legend>
-		<div class="panel panel-primary">
-			<table width="100%" style="border-spacing: 20px; border-collapse: separate;">
-			<tr>
-			<td >
-					<div class="explanation">
-					Upload your bdm to update the database.
-					</div>
-					
-					<div ng-file-drop ng-model="files"
-								class="drop-box ng-isolate-scope ng-valid ng-dirty"
-								drag-over-class="{accept:'dragover', reject:'dragover-err', delay:100}"
-								multiple="true" allow-dir="false">Drop BDM.zip to be upload here</div>
-					<div ng-no-file-drop class="drop-box" style="display: none;">File Drop is not supported for this browser</div>
-								
-					<!-- File loaded : {{snowctrl.bdmfile}}<br> -->
-								 
-					<div class="alert alert-danger" role="alert" ng-show="snowctrl.errormessage.length > 20">
-						<div ng-bind-html="snowctrl.getHtml( snowctrl.errormessage)"></div>			
-					</div>
-					
-					<table style="border-spacing: 20px; border-collapse: separate;">
-						<tr><td >
-							<button id="calculUpdate" ng-click="snowctrl.calculupdate()" class="btn btn-info" ng-disabled="snowctrl.inprogress">Calcul Update</button>
-						</td><td>
-							<div ng-show="snowctrl.inprogress">
-								<span class="Loading">.</span>Please wait, calcul in progress
-							</div>
-						</td></tr>
-					</table>
+		<div class="col-lg-5">
+			<div class="explanation">
+			Upload your bdm to update the database.
+			</div>
 			
-					<!-- <span style="color:red">{{timetrackerctrl.errormessage}}</span>-->
-			</td><td>	
-					<!--  parameters -->
-					<div class="row">
-						<div class="col-lg-1">
-						</div>
-						<div class="col-lg-5">
-							<div class="panel panel-info">
-								<div class="panel-heading">Parameters</div>
-								<div>
-									<table style="border-spacing: 10px; border-collapse: separate;">
-										<tr><td>Drop Table:</td><td><input type="checkbox" ng-model="snowctrl.includeDropTable">Include in SQL script</td><td>Drops table will be in included</tr>
-										<tr><td>Drop Content:</td><td><input type="checkbox" ng-model="snowctrl.includeDropContent">Include in SQL script</td><td>Internal drops of columns, constraints, index</tr>
-									</table>
-								</div>
-							</div>
-						</div>
+			<div ng-file-drop ng-model="files"
+						class="drop-box ng-isolate-scope ng-valid ng-dirty"
+						drag-over-class="{accept:'dragover', reject:'dragover-err', delay:100}"
+						multiple="true" allow-dir="false">Drop BDM.zip to be upload here</div>
+			<div ng-no-file-drop class="drop-box" style="display: none;">File Drop is not supported for this browser</div>
+						
+			<!-- File loaded : {{snowctrl.bdmfile}}<br> -->
+						 
+			<div class="alert alert-danger" role="alert" ng-show="snowctrl.errormessage.length > 20">
+				<div ng-bind-html="snowctrl.getHtml( snowctrl.errormessage)"></div>			
+			</div>
+			
+			<table style="border-spacing: 20px; border-collapse: separate;">
+				<tr><td >
+					<button id="calculUpdate" ng-click="snowctrl.calculupdate()" class="btn btn-info" ng-disabled="snowctrl.inprogress">Calcul Update</button>
+				</td><td>
+					<div ng-show="snowctrl.inprogress">
+						<span class="Loading">.</span>Please wait, calcul in progress
 					</div>
-			</td>
-			</tr>
+				</td></tr>
 			</table>
-			<p>
-			
-
-			
+		</div>
+		
+		
+		<div class="col-lg-7">
+	
+			<!--  parameters -->
+			<div class="panel panel-info">
+				<div class="panel-heading">Parameters</div>
+				<div>
+					<table style="border-spacing: 10px; border-collapse: separate;">
+						<tr><td>Database:</td><td>{{snowctrl.DatabaseProductName}} ({{snowctrl.DatabaseProductVersion}}) :  {{snowctrl.DatabaseMajorVersion}}.{{snowctrl.DatabaseMinorVersion}}</td></tr>
+					
+						<tr><td>Drop Table:</td><td><input type="checkbox" ng-model="snowctrl.includeDropTable">Include in SQL script</td><td>Drops table will be in included</tr>
+						<tr><td>Drop Content:</td><td><input type="checkbox" ng-model="snowctrl.includeDropContent">Include in SQL script</td><td>Internal drops of columns, constraints, index</tr>
+						<tr><td>Change column type:</td><td><select ng-model="snowctrl.policyChangeColumnType">
+																<option value="ALTER_COLUMN">Alter column</option>
+																<option value="DROP_INSERT_COLUMN">Drop/add column</option>
+																<option value="IGNORE">Ignore (just comment it)</option>
+																
+															</select>
+														</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+		
+		
+		<p>
+		<div class="col-lg-12">
 			<h3><a href="#" ng-click="snowctrl.showSqlScript = ! snowctrl.showSqlScript" style="text-decoration:none">					
 	  				<span ng-show="snowctrl.showSqlScript" class="glyphicon glyphicon-chevron-down" style="font-size: 18px;"></span>
 					<span ng-show="! snowctrl.showSqlScript" class="glyphicon glyphicon-chevron-right"  style="font-size: 18px;"></span>
@@ -135,7 +128,10 @@
 			<div ng-show="snowctrl.showSqlScript">
 				<textarea ng_model="snowctrl.sqlupdate" style="margin: 2%;width: 96%;height: 400px;"></textarea>
 			</div>
-			
+		</div>
+		
+		
+		<div class="col-lg-12">
 			<h3><a href="#" ng-click="snowctrl.showDelta = ! snowctrl.showDelta" style="text-decoration:none">					
 	  				<span ng-show="snowctrl.showDelta" class="glyphicon glyphicon-chevron-down" style="font-size: 18px;"></span>
 					<span ng-show="! snowctrl.showDelta" class="glyphicon glyphicon-chevron-right"  style="font-size: 18px;"></span>
@@ -155,7 +151,9 @@
 					</table>
 				</div>			
 			</div>
-
+		</div>
+		
+		<div class="col-lg-12">
 			<h3><a href="#" ng-click="snowctrl.showDetail = ! snowctrl.showDetail" style="text-decoration:none">					
 	  				<span ng-show="snowctrl.showDetail" class="glyphicon glyphicon-chevron-down" style="font-size: 18px;"></span>
 					<span ng-show="! snowctrl.showDetail" class="glyphicon glyphicon-chevron-right"  style="font-size: 18px;"></span>
@@ -164,9 +162,9 @@
 				<!--  <textarea rows="30" cols="220" ng_model="snowctrl.message"></textarea> -->
 				<textarea ng_model="snowctrl.message" style="margin: 2%;width: 96%;height: 400px;"></textarea>
 			</div>
-			
-			
 		</div>
+			
+
 	</div>
 			
 </div>

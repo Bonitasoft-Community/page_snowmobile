@@ -132,6 +132,11 @@ public class Index implements PageController {
 						parameter.commentDropIndex = false;
 						parameter.commentDropConstraint = false;
 					}
+                    String policy = request.getParameter("policyChangeColumnType");
+                    if (policy != null)
+                    {
+                        parameter.policyChangeColumnType = SnowMobileAccess.POLICY_CHANGE_TYPE.valueOf( policy.toUpperCase() );
+                    }
 					snowMobileAccess.calculSqlScript(parameter, operationStatus);
 				}	
 				resultUpdate.put("sqlupdate", 		operationStatus.getSql());

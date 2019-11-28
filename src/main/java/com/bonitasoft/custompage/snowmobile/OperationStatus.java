@@ -19,7 +19,7 @@ public class OperationStatus {
 
     private static Logger logger = Logger.getLogger(OperationStatus.class.getName());
 
-    private String sql;
+    private StringBuffer collectSqlscript = new StringBuffer();
     private String presql;
     private String postsql;
 
@@ -47,12 +47,13 @@ public class OperationStatus {
     
 
     public void addErrorEvent(final BEvent event) {
+        logger.severe(event.toString());
         // don't add the same message
         for (BEvent eventList : listErrorsEvent) {
             if (eventList.isIdentical(event))
-                continue;
+                return;
         }
-        logger.severe(event.toString());
+
         listErrorsEvent.add(event);
     }
 
@@ -189,18 +190,19 @@ public class OperationStatus {
     /*                                                       */
     /* ----------------------------------------------------- */
 
-    public void addSqlUpdate(final String addSql, final boolean isComment) {
+    public void addSqlUpdate(final String addSql, final boolean isComment, String commentInScript) {
         String commentSql = "";
         if (sqlHeaderMsg != null) {
             commentSql = getBigComment(sqlHeaderMsg, false);
             sqlHeaderMsg = null;
         }
 
-        sql = (sql == null ? "" : sql + "\n")
+        collectSqlscript.append( "\n"
                 + commentSql
+                + (commentInScript!=null ? "-- "+commentInScript+"\n" : "")
                 + (isComment ? "-- " : "")
-                + addSql;
-        System.out.println("SQL:" + (isComment ? "-- " : "") + addSql);
+                + addSql);
+        logger.info("SnowMobile.operationStatus:" + (isComment ? "-- " : "") + addSql);
     }
 
     /*
@@ -213,9 +215,9 @@ public class OperationStatus {
             sqlHeaderMsg = null;
         }
 
-        sql = (sql == null ? "" : sql + "\n")
+        collectSqlscript.append( "\n"
                 + commentSql
-                + "-- " + comment;
+                + "-- " + comment);
         System.out.println("SQL:" + commentSql + "-- " + comment);
     }
 
@@ -250,12 +252,12 @@ public class OperationStatus {
     /* ----------------------------------------------------- */
 
     public String getSql() {
-        if (presql == null && postsql == null && sql == null) {
+        if (presql == null && postsql == null && collectSqlscript == null) {
             return null;
         }
 
         return (presql == null ? "" : presql) + "\n"
-                + (sql == null ? "" : sql) + "\n"
+                + (collectSqlscript == null ? "" : collectSqlscript) + "\n"
                 + (postsql == null ? "" : postsql);
     }
 

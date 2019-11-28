@@ -1,15 +1,19 @@
 package com.bonitasoft.custompage.snowmobile;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEvent.Level;
@@ -18,10 +22,14 @@ import com.bonitasoft.custompage.snowmobile.SnowMobileAccess.ParametersCalcul;
 
 public class JdbcTable {
 
+    private static Logger logger = Logger.getLogger(JdbcTable.class.getName());
+
     private static final BEvent EVENT_INCOHERENT_DATABASE = new BEvent(JdbcTable.class.getName(), 1, Level.APPLICATIONERROR, "Table referenced in CATALOG, but no description", "A table is detected in the CATALOG of the database, but then no columns are found", "Differential can't be calculated", "Check the database");
 
     private static BEvent EVENT_FOREIGNCONSTRAINTWITHOUTNAME = new BEvent(JdbcTable.class.getName(), 2, Level.APPLICATIONERROR,
             "Foreign key without a constraint", "For a foreign key, a constraint is expected", "The constraint will be proposed", "Check the SQL about this key");
+    private static BEvent EVENT_SQLERROR = new BEvent(JdbcTable.class.getName(), 3, Level.ERROR,
+            "Exception error in SQL", "An exvception arrived during a SQL operation", "The analysis of the database failed", "Check the SQL Exception");
 
     private final JdbcModel jdbcModel;
     /**
@@ -160,20 +168,49 @@ public class JdbcTable {
     }
 
     public JdbcTable getCollectionTable(final String parentTableName, final String childTableName, final ParametersCalcul parametersCalcul) {
-        final String parentTable = parentTableName.toLowerCase();
-        if (parametersCalcul.maxNumberOfCharacterForCollectionTable != -1 && parentTable.length() > parametersCalcul.maxNumberOfCharacterForCollectionTable) {
-            final String collectionTableName = parentTable.substring(0, parametersCalcul.maxNumberOfCharacterForCollectionTable) + "_"
-                    + childTableName.toLowerCase();
-            JdbcTable jdbcTable = collectionsTableName.get(collectionTableName);
-            if (jdbcTable != null) {
-                return jdbcTable;
-            }
-            // let's have a look in the unknow table
-            jdbcTable = jdbcModel.getCollectionUnknowChildTable().get(collectionTableName);
-            return jdbcTable;
+        
 
+        JdbcTable jdbcTable = searchInSet(collectionsTableName, parentTableName, childTableName);
+        // let's have a look in the unknow table
+        if (jdbcTable == null)
+            jdbcTable = searchInSet(jdbcModel.getCollectionUnknowChildTable(), parentTableName, childTableName);
+        return jdbcTable;
+    }
+
+    /**
+     * Parent name is for example "businesscalendar"
+     * childtablename is hollydays
+     * the collection table is something like businesscalendar_hollydays or businesscal_hollydays or businesscal_hollyd
+     * 
+     * @param sourceTables
+     * @param parentTableName
+     * @param childTableName
+     * @return
+     */
+    private JdbcTable searchInSet(Map<String, JdbcTable> sourceTables, String parentTableName, String childTableName) {
+        for (String tableName : sourceTables.keySet()) {
+            if (tableName.indexOf("_") == -1)
+                continue;
+            String prefixTable = tableName.substring(0, tableName.indexOf("_"));
+            String suffixTable = tableName.substring(tableName.indexOf("_") + 1);
+            if (equalsBegining(prefixTable, parentTableName) && equalsBegining(suffixTable, childTableName))
+                return sourceTables.get(tableName);
         }
-        return collectionsTableName.get(parentTableName.toLowerCase() + "_" + childTableName.toLowerCase());
+
+        return null;
+    }
+
+    /**
+     * @param s1
+     * @param s2
+     * @return
+     */
+    public boolean equalsBegining(String s1, String s2) {
+        if (s1.length() < s2.length())
+            return s1.equalsIgnoreCase(s2.substring(0, s1.length()));
+        else
+            return s2.equalsIgnoreCase(s1.substring(0, s2.length()));
+
     }
 
     /**
@@ -210,7 +247,7 @@ public class JdbcTable {
                         || jdbcColumn.colName.equals(GeneratorSql.cstColumnPersistenceVersion)) {
                     continue;
                 }
-                // this is a refence table : it should appears in the reference
+                // this is a reference table : it should appears in the reference
                 if (jdbcColumn.colName.endsWith(GeneratorSql.cstSuffixColumnPid)) {
                     // jdbcColumn.colName = jdbcColumn.colName.substring(0, jdbcColumn.colName.length()-4);
                     jdbcColumn.isForeignKey = true;
@@ -230,20 +267,18 @@ public class JdbcTable {
             rs.close();
 
             if (!oneColumnFound) {
-                operationStatus.addErrorEvent( new BEvent(EVENT_INCOHERENT_DATABASE, "Table[" + sqlOriginaltableName + "]"));
+                operationStatus.addErrorEvent(new BEvent(EVENT_INCOHERENT_DATABASE, "Table[" + sqlOriginaltableName + "]"));
             }
 
             // index & constraints
             // i==0 => unique = Constraint
             // i==1 => index
 
-            rs = databaseMetaData
-                    .getIndexInfo(null /* String catalog */, null /* String schema */, sqlOriginaltableName, false /*
-                                                                                                                    * unique
-                                                                                                                    */, false /*
-                                                                                                                               * boolean
-                                                                                                                               * approximate
-                                                                                                                               */);
+            rs = databaseMetaData.getIndexInfo(null /* String catalog */, null /* String schema */, sqlOriginaltableName, false /** unique */
+                    , false /*
+                             * boolean
+                             * approximate
+                             */);
             while (rs.next()) {
                 String indexName = rs.getString("INDEX_NAME");
                 indexName = indexName.toLowerCase();
@@ -309,11 +344,16 @@ public class JdbcTable {
             for (final JdbcColumn jdbcColumn : listColumns) {
                 if (jdbcColumn.isForeignKey && jdbcColumn.contraintsName == null) {
 
-                    operationStatus.addErrorEvent( new BEvent(EVENT_FOREIGNCONSTRAINTWITHOUTNAME, "Table[" + tableName + "] colum[" + jdbcColumn.colName + "]"));
+                    operationStatus.addErrorEvent(new BEvent(EVENT_FOREIGNCONSTRAINTWITHOUTNAME, "Table[" + tableName + "] colum[" + jdbcColumn.colName + "]"));
                     jdbcColumn.isForeignKey = false;
                 }
             }
         } catch (final Exception e) {
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            String exceptionDetails = sw.toString();
+            logger.severe("Error " + e.getMessage() + " at " + exceptionDetails);
+            operationStatus.addErrorEvent(new BEvent(EVENT_SQLERROR, e, "During analysis of database"));
 
             result = e.toString();
             if (rs != null) {

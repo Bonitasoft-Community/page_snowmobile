@@ -80,6 +80,7 @@ public class SnowMobileAccess {
     
     private BdmContent bdmContent;
     private JdbcModel jdbcModel;
+    public enum POLICY_CHANGE_TYPE { ALTER_COLUMN, DROP_INSERT_COLUMN, IGNORE };
 
     public static class ParametersCalcul {
 
@@ -90,12 +91,13 @@ public class SnowMobileAccess {
         public boolean commentExtraDropTables = false;
         public boolean calculChangeTypeColumn = true;
         public boolean addBusinessComment = true;
+        /* value alter_column or drop_insert_column */
+        public POLICY_CHANGE_TYPE policyChangeColumnType= POLICY_CHANGE_TYPE.ALTER_COLUMN;
         /**
          * the subcollection table is limited to 14 char.
          * Then, when the table name is "ThisIsATableNameVeryLong", and this table name has a collection
          * field like "mainaddress" which is a collection, then
-         * the table name is
-         * ThisIsATableNa_mainaddress
+         * the table name is ThisIsATableNa_mainaddress (or not...)
          */
         public int maxNumberOfCharacterForCollectionTable = 14;
 
@@ -480,7 +482,7 @@ public class SnowMobileAccess {
                 }
                 if ((fieldComparaison & EnumFieldComparaisonTYPECHANGE) != 0) {
                     deltaMsg = "Type change [" + generatorSql.getSqlType(jdbcColumn) + "]->[" + generatorSql.getSqlType(bdmField) + "]";
-                    generatorSql.sqlColumnTypeChange(bdmField);
+                    generatorSql.sqlColumnTypeChange(bdmField, jdbcColumn );
                 }
                 if ((fieldComparaison & EnumFieldComparaisonBDMISAFOREIGNKEY) != 0) {
                     deltaMsg = "Bdm is Foreign";
@@ -494,8 +496,15 @@ public class SnowMobileAccess {
                 if ((fieldComparaison & EnumFieldComparaisonFOREIGNTABLECHANGE) != 0) {
                     deltaMsg = "Foreign table change";
                     // drop the current key
-                    generatorSql.sqlDropForeignConstraint(bdmField, jdbcColumn.contraintsName);
-                    generatorSql.addComment("The column " + bdmField.getSqlCompleteColName() + " should be purge because the constrainst change");
+                    if (jdbcColumn.contraintsName!=null)
+                    {
+                        generatorSql.addComment("The column " + bdmField.getSqlCompleteColName() + " should be purge because the constrainst change");                    
+                        generatorSql.sqlDropForeignConstraint(bdmField, jdbcColumn.contraintsName);
+                    }
+                    else
+                        generatorSql.addComment("A new constraint is added to the column " + bdmField.getSqlCompleteColName() + " : constraint may be failed");                    
+                        
+                    
                     generatorSql.sqlCreateForeignConstraint(bdmField, false);
                 }
                 if (deltaMsg != null) {
@@ -800,23 +809,23 @@ public class SnowMobileAccess {
             currentComparaison |= EnumFieldComparaisonJDBCISNULLABLE;
         }
 
-        if ("STRING".equals(bdmField.fieldType)) {
+        // case STRING and size change?
+        if ("STRING".equals(bdmField.fieldType) && "STRING".equals(generatorSql.getBDMType(jdbcColumn) )) {
             if (bdmField.fieldLength != jdbcColumn.length) {
                 currentComparaison |= EnumFieldComparaisonLENGTHCHANGE;
             }
         }
-
-        if (!generatorSql.getSqlType(bdmField).equals(generatorSql.getSqlType(jdbcColumn))) {
-            currentComparaison |= EnumFieldComparaisonTYPECHANGE;
+        else {
+            if (!generatorSql.getSqlType(bdmField).equals(generatorSql.getSqlType(jdbcColumn))) {
+                currentComparaison |= EnumFieldComparaisonTYPECHANGE;
         }
-
+        }
         if (bdmField.isRelationField && !jdbcColumn.isForeignKey) {
             currentComparaison |= EnumFieldComparaisonBDMISAFOREIGNKEY;
         }
         if (!bdmField.isRelationField && jdbcColumn.isForeignKey) {
             currentComparaison |= EnumFieldComparaisonJDBCISAFOREIGNKEY;
         }
-
         if (bdmField.isRelationField && jdbcColumn.isForeignKey) {
             // same foreign table ?
             if (!bdmField.referenceSqlTable.equals(jdbcColumn.referenceTable)) {

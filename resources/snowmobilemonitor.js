@@ -30,6 +30,7 @@ appCommand.controller('SnowMobileController',
 		this.inprogress=false;
 		this.includeDropTable=true;
 		this.includeDropContent=true;
+		this.policyChangeColumnType='ALTER_COLUMN';
 		
 		this.showSqlScript=true;
 		this.showDelta=true;
@@ -45,14 +46,20 @@ appCommand.controller('SnowMobileController',
 			
 			var url='?page=custompage_snowmobile&action=info&t='+t;
 			$http.get( url )
-					.success( function ( jsonResult ) {		
-								self.DatabaseMajorVersion					= jsonResult.DatabaseMajorVersion;
-								self.DatabaseMinorVersion					= jsonResult.DatabaseMinorVersion;
-								self.DatabaseProductName					= jsonResult.DatabaseProductName;
-								self.DatabaseProductVersion					= jsonResult.DatabaseProductVersion;
-								self.errormessage					= jsonResult.errormessage;
-								self.inprogress						= false;
-								}
+					.success( function ( jsonResult, statusHttp, headers, config ) {
+						
+						// connection is lost ?
+						if (statusHttp==401 || typeof jsonResult === 'string') {
+							console.log("Redirected to the login page !");
+							window.location.reload();
+						}	
+						self.DatabaseMajorVersion					= jsonResult.DatabaseMajorVersion;
+						self.DatabaseMinorVersion					= jsonResult.DatabaseMinorVersion;
+						self.DatabaseProductName					= jsonResult.DatabaseProductName;
+						self.DatabaseProductVersion					= jsonResult.DatabaseProductVersion;
+						self.errormessage					= jsonResult.errormessage;
+						self.inprogress						= false;
+						}
 					)
 					.error( function ( result ) {
 								self.errormessage					= jsonResult.errormessage;
@@ -71,18 +78,28 @@ appCommand.controller('SnowMobileController',
 			self.inprogress						= true;
 			var t = new Date();
 			
-			var url='?page=custompage_snowmobile&action=calculupdate&bdmfile='+this.bdmfile+"&includeDropTable="+this.includeDropTable+"&includeDropContent="+this.includeDropContent+"&t="+t;
+			var url='?page=custompage_snowmobile&action=calculupdate&bdmfile='+this.bdmfile;
+			url += "&includeDropTable="+this.includeDropTable
+			url += "&includeDropContent="+this.includeDropContent
+			url += "&policyChangeColumnType="+this.policyChangeColumnType
+			url += "&t="+t;
 		
 				
 			$http.get( url )
-				.success( function ( jsonResult ) {		
-						console.log("history",jsonResult);
-						self.sqlupdate 					= jsonResult.sqlupdate;
-						self.errormessage 				= jsonResult.errormessage; 	
-						self.deltamessage				= jsonResult.deltamessage;
-						self.message					= jsonResult.message
-						self.inprogress						= false;
-							})
+				.success( function ( jsonResult, statusHttp, headers, config ) {
+					
+					// connection is lost ?
+					if (statusHttp==401 || typeof jsonResult === 'string') {
+						console.log("Redirected to the login page !");
+						window.location.reload();
+					}	
+					console.log("history",jsonResult);
+					self.sqlupdate 					= jsonResult.sqlupdate;
+					self.errormessage 				= jsonResult.errormessage; 	
+					self.deltamessage				= jsonResult.deltamessage;
+					self.message					= jsonResult.message
+					self.inprogress						= false;
+						})
 				.error( function ( result ) {
 						self.inprogress						= false;
 						alert('error during calcul update');
