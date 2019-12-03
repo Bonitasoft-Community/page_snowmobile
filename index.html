@@ -164,7 +164,17 @@
 			</div>
 		</div>
 			
-
+		<div class="col-lg-12">
+			<h3><a href="#" ng-click="snowctrl.showDatabase = ! snowctrl.showDatabase" style="text-decoration:none">					
+	  				<span ng-show="snowctrl.showDatabase" class="glyphicon glyphicon-chevron-down" style="font-size: 18px;"></span>
+					<span ng-show="! snowctrl.showDatabase" class="glyphicon glyphicon-chevron-right"  style="font-size: 18px;"></span>
+			</a>Database structure</h3>
+			<div ng-show="snowctrl.showDatabase">
+				<!--  <textarea rows="30" cols="220" ng_model="snowctrl.message"></textarea> -->
+				<textarea ng_model="snowctrl.databaseStructure" style="margin: 2%;width: 96%;height: 400px;"></textarea>
+			</div>
+		</div>
+			
 	</div>
 			
 </div>

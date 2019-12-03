@@ -11,10 +11,13 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -28,9 +31,8 @@ import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEvent.Level;
 import org.bonitasoft.log.event.BEventFactory;
 
-import java.util.logging.Logger;
-
 import com.bonitasoft.custompage.snowmobile.BdmBusinessObject.BdmListOfFields;
+import com.bonitasoft.custompage.snowmobile.BdmField.enumRelationType;
 import com.bonitasoft.custompage.snowmobile.JdbcTable.JdbcColumn;
 import com.bonitasoft.custompage.snowmobile.JdbcTable.TableListOfColums;
 import com.bonitasoft.custompage.snowmobile.OperationStatus.TypeMsg;
@@ -244,8 +246,8 @@ public class SnowMobileAccess {
         // try to add java:/comp/env/
         // TOMCAT : java:/comp/env/bonitaSequenceManagerDS
         // JBOSS : java:jboss/datasources/bonitaSequenceManagerDS
-        DataSource ds = null;
-        String differentTests = "";
+        // DataSource ds = null;
+        // String differentTests = "";
 
         Connection con = null;
         try {
@@ -330,6 +332,79 @@ public class SnowMobileAccess {
         final GeneratorSql generatorSql = new GeneratorSql(parametersCalcul, bdmContent, jdbcModel, operationStatus);
         final Map<String, JdbcTable> mapMetaModelTable = jdbcModel.getSetTables();
 
+        List<JdbcTable> listTablesSorted = new ArrayList<JdbcTable>();
+        listTablesSorted.addAll(mapMetaModelTable.values());
+        Collections.sort(listTablesSorted, new Comparator<JdbcTable>()
+        {
+          public int compare(JdbcTable s1,
+                  JdbcTable s2)
+          {
+            return s1.getTableName().compareTo(s2.getTableName());
+          }
+        });
+
+        for (JdbcTable jdbcTable : listTablesSorted)
+        {
+            operationStatus.addDatabaseStructure("-- -----------------------------");
+            operationStatus.addDatabaseStructure("-- Table "+jdbcTable.getTableName()+ "(");
+             
+            // get the columns, and sort them
+            List<JdbcColumn> listColumnsSorted= new ArrayList<JdbcTable.JdbcColumn>();
+            listColumnsSorted.addAll(jdbcTable.getListColumns() );
+            
+            Collections.sort(listColumnsSorted, new Comparator<JdbcColumn>()
+            {
+              public int compare(JdbcColumn s1,
+                      JdbcColumn s2)
+              {
+                return s1.getColName().compareTo(s2.getColName());
+              }
+            });
+            // add technical column in first
+            listColumnsSorted.addAll(0, jdbcTable.getListTechnicalColumns());
+            
+            // now, report them
+            for (JdbcColumn jdbcColum : listColumnsSorted)
+            {
+                String sqlType=generatorSql.getSqlType( jdbcColum, false );
+                String colDescription="      "+jdbcColum.getColName()+" "+ (sqlType==null ? "No conversion for "+jdbcColum.dataType : sqlType);
+                
+                
+                    
+                if (! jdbcColum.nullable)
+                    colDescription+=" not null";
+                
+                if (jdbcColum.isForeignKey)
+                    colDescription+=" FOREIGN KEY ";
+                operationStatus.addDatabaseStructure( colDescription );
+            }
+            operationStatus.addDatabaseStructure(")");    
+            
+            if (jdbcTable.getMapConstraints().size()>0) {
+                operationStatus.addDatabaseStructure("");    
+                operationStatus.addDatabaseStructure(" -- Constraints:");
+                for (TableListOfColums constraint : jdbcTable.getMapConstraints().values())
+                {
+                    String constraintDescription ="   "+constraint.name+" "+constraint.getListColumns().toString();
+                    operationStatus.addDatabaseStructure( constraintDescription );    
+                }
+            }
+            if (jdbcTable.getMapIndexes().size()>0) {
+                operationStatus.addDatabaseStructure("");    
+                operationStatus.addDatabaseStructure(" -- Indexes:");
+                for (TableListOfColums index : jdbcTable.getMapIndexes().values())
+                {
+                    String constraintDescription ="   "+index.name+" " + (index.unique? "unique":"")+index.getListColumns().toString();
+                    operationStatus.addDatabaseStructure( constraintDescription );    
+                }
+            }
+            operationStatus.addDatabaseStructure("");    
+            operationStatus.addDatabaseStructure("");    
+
+        }
+            
+        
+        // calculate the value now
         operationStatus.addDeltaMsg(null, null, "Database : " + jdbcModel.getDatabaseProductName(), TypeMsg.INFO);
         operationStatus.addSqlPreUpdate("-- Database : " + jdbcModel.getDatabaseProductName());
 
@@ -604,7 +679,7 @@ public class SnowMobileAccess {
                         bdmField.isRelationField = true; // so the _pid will be
                                                          // add, and the foreign
                                                          // key too
-                        bdmField.relationType = bdmField.relationType.AGGREGATION; // let's
+                        bdmField.relationType = enumRelationType.AGGREGATION; // let's
                                                                                    // say
                                                                                    // it's
                                                                                    // a

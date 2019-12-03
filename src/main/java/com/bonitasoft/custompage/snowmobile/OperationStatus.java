@@ -27,6 +27,8 @@ public class OperationStatus {
     private StringBuffer deltamsg = new StringBuffer("");
     private List<Map<String, Object>> deltamsgList = new ArrayList<Map<String, Object>>();
 
+    private StringBuffer databaseStructure = new StringBuffer("");
+
     private List<BEvent> listErrorsEvent = new ArrayList<BEvent>();
 
     private String headerMsg;
@@ -245,6 +247,20 @@ public class OperationStatus {
         postsql = (postsql == null ? "" : postsql + "\n") + addSql;
     }
 
+    /* ----------------------------------------------------- */
+    /*                                                       */
+    /* Database Structure */
+    /*                                                       */
+    /* ----------------------------------------------------- */
+
+    public void addDatabaseStructure(String line) {
+        databaseStructure.append(line+"\n");
+    }
+        
+    public String getDatabaseStructure() {
+        return databaseStructure.toString();
+    }
+    
     /* ----------------------------------------------------- */
     /*                                                       */
     /* Getter */

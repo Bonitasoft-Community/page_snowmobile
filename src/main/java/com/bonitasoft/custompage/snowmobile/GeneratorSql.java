@@ -469,6 +469,7 @@ public class GeneratorSql {
             new ConversionItem("INTEGER", "integer","integer",java.sql.Types.INTEGER, false),
             new ConversionItem("FLOAT", "real", "real",java.sql.Types.REAL, false),
             new ConversionItem("DOUBLE", "double precision", "double precision", java.sql.Types.DOUBLE, false),
+            new ConversionItem("DOUBLE", "double precision", "double precision", java.sql.Types.NUMERIC, false),
             // Keep this one, because we can find a TIMESTAMP in the database
             new ConversionItem("DATE", "character varying", "type varchar", java.sql.Types.TIMESTAMP, true, 10),
 
@@ -546,17 +547,24 @@ public class GeneratorSql {
     }
 
     public String getSqlType(final JdbcColumn jdbcColumn) {
+       return getSqlType( jdbcColumn, true);
+    }
+    public String getSqlType(final JdbcColumn jdbcColumn, boolean collectError) {
         final ConversionItem[] conversionTable = getConversionTable(metaModel.getDatabaseProductName());
         for (final ConversionItem oneConversion : conversionTable) {
             if (oneConversion.jdbcType == jdbcColumn.dataType) {
                 return oneConversion.jdbcSqlType + (oneConversion.lengthIsImportant ? "(" + (oneConversion.overrideLength != null ? oneConversion.overrideLength : jdbcColumn.length) + ")" : "");
             }
         }
-        operationStatus.addErrorEvent( new BEvent(EVENT_TYPEJDBC_UNKNOW, "Jdbc Type unknow[" + jdbcColumn.dataType + "] JdbcTable[" + jdbcColumn.getJdbcTable().getTableName() + "] field["
-                + jdbcColumn.getColName() + "]"));
-        return "varchar";
+        if (collectError) {
+            operationStatus.addErrorEvent( new BEvent(EVENT_TYPEJDBC_UNKNOW, "Jdbc Type unknow[" + jdbcColumn.dataType + "] JdbcTable[" + jdbcColumn.getJdbcTable().getTableName() + "] field["
+                    + jdbcColumn.getColName() + "]"));
+            return "varchar";
+        }
+        // do not collect error, so return a null value
+        return null;
+            
     }
-
     /**
      * from the JdbcCoum
      * @param jdbcColumn

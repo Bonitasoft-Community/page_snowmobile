@@ -78,6 +78,9 @@ public class JdbcTable {
             return "varchar";
         }
 
+        public int getSqlDataType() {
+            return dataType;
+        }
         public JdbcTable getJdbcTable() {
             return jdbcTable;
         };
@@ -89,6 +92,8 @@ public class JdbcTable {
 
     }
 
+    
+    private List<JdbcColumn> listTechnicalColumns = new ArrayList<JdbcColumn>();
     private List<JdbcColumn> listColumns = new ArrayList<JdbcColumn>();
 
     public class TableListOfColums {
@@ -242,9 +247,18 @@ public class JdbcTable {
                 final JdbcColumn jdbcColumn = new JdbcColumn(this);
                 jdbcColumn.colName = rs.getString("COLUMN_NAME");
                 jdbcColumn.colName = jdbcColumn.colName == null ? "" : jdbcColumn.colName.toLowerCase();
+
+                jdbcColumn.dataType = rs.getInt("DATA_TYPE");
+                jdbcColumn.length = rs.getInt("COLUMN_SIZE");
+                if (jdbcColumn.dataType == java.sql.Types.VARCHAR && jdbcColumn.length > 100000) {
+                    jdbcColumn.dataType = -333; // special marker for a Text
+                }
+
                 // don't keep in mind the system column
                 if (jdbcColumn.colName.equals(GeneratorSql.cstColumnPersistenceId)
                         || jdbcColumn.colName.equals(GeneratorSql.cstColumnPersistenceVersion)) {
+                    listTechnicalColumns.add( jdbcColumn );
+                    
                     continue;
                 }
                 // this is a reference table : it should appears in the reference
@@ -253,13 +267,8 @@ public class JdbcTable {
                     jdbcColumn.isForeignKey = true;
                 }
 
-                jdbcColumn.dataType = rs.getInt("DATA_TYPE");
-                jdbcColumn.length = rs.getInt("COLUMN_SIZE");
-                if (jdbcColumn.dataType == java.sql.Types.VARCHAR && jdbcColumn.length > 100000) {
-                    jdbcColumn.dataType = -333; // special marker for a Text
-                }
                 if (jdbcColumn.colName.equals("style") || jdbcColumn.colName.equals("string2composition")) {
-                    System.out.println("JdbcTable : jdbcColumn[" + jdbcColumn.colName + "] type[" + jdbcColumn.dataType + "]");
+                    logger.info("JdbcTable : jdbcColumn[" + jdbcColumn.colName + "] type[" + jdbcColumn.dataType + "]");
                 }
                 jdbcColumn.nullable = "YES".equals(rs.getString("IS_NULLABLE"));
                 listColumns.add(jdbcColumn);
@@ -379,7 +388,15 @@ public class JdbcTable {
     public List<JdbcColumn> getListColumns() {
         return listColumns;
     }
-
+    
+    /**
+     * persistenceId, persistenceVersion are considered as technical columns
+     * @return
+     */
+    public List<JdbcColumn> getListTechnicalColumns() {
+        return listTechnicalColumns;
+    }
+    
     public Map<String, TableListOfColums> getMapIndexes() {
         return indexes;
     }

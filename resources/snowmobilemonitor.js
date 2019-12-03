@@ -97,6 +97,8 @@ appCommand.controller('SnowMobileController',
 					self.sqlupdate 					= jsonResult.sqlupdate;
 					self.errormessage 				= jsonResult.errormessage; 	
 					self.deltamessage				= jsonResult.deltamessage;
+					self.databaseStructure			= jsonResult.databaseStructure;
+					
 					self.message					= jsonResult.message
 					self.inprogress						= false;
 						})

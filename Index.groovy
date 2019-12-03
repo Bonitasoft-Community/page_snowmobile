@@ -139,10 +139,11 @@ public class Index implements PageController {
                     }
 					snowMobileAccess.calculSqlScript(parameter, operationStatus);
 				}	
-				resultUpdate.put("sqlupdate", 		operationStatus.getSql());
-				resultUpdate.put("errormessage", 	BEventFactory.getHtml( operationStatus.getErrors()));
-				resultUpdate.put("deltamessage", 	operationStatus.getDeltaMsgList());
-				resultUpdate.put("message", 	operationStatus.getMsg());
+				resultUpdate.put("sqlupdate", 		    operationStatus.getSql());
+				resultUpdate.put("errormessage", 	    BEventFactory.getHtml( operationStatus.getErrors()));
+				resultUpdate.put("deltamessage", 	    operationStatus.getDeltaMsgList());
+				resultUpdate.put("message", 	        operationStatus.getMsg());
+                resultUpdate.put("databaseStructure",   operationStatus.getDatabaseStructure());
 			}
 			
 			String jsonDetailsSt = JSONValue.toJSONString( resultUpdate );
