@@ -6,7 +6,6 @@ import java.util.Set;
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEvent.Level;
 
-import com.bonitasoft.custompage.snowmobile.BdmBusinessObject.BdmListOfFields;
 import com.bonitasoft.custompage.snowmobile.JdbcTable.JdbcColumn;
 import com.bonitasoft.custompage.snowmobile.SnowMobileAccess.POLICY_CHANGE_TYPE;
 import com.bonitasoft.custompage.snowmobile.SnowMobileAccess.ParametersCalcul;

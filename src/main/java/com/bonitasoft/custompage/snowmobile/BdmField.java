@@ -61,13 +61,18 @@ public class BdmField {
 
     /**
      * return the column name in lower case
+     * it must be prefixed by pid if the field is a relation BUT not a collection. A Collection is managed by an another table
      *
      * @return
      */
     public String getSqlColName() {
-        return name + (isRelationField ? GeneratorSql.cstSuffixColumnPid : "");
+        return name + (isRelationField && ! isCollection() ? GeneratorSql.cstSuffixColumnPid : "");
     }
 
+    /**
+     * the fieldName is the same as the name
+     * @return
+     */
     public String getFieldName() {
         return name;
     }

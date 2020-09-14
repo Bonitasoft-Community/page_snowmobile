@@ -21,17 +21,13 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
-
 import org.bonitasoft.engine.api.ProcessAPI;
 import org.bonitasoft.engine.session.APISession;
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEvent.Level;
 import org.bonitasoft.log.event.BEventFactory;
+import org.bonitasoft.properties.BonitaEngineConnection;
 
-import com.bonitasoft.custompage.snowmobile.BdmBusinessObject.BdmListOfFields;
 import com.bonitasoft.custompage.snowmobile.BdmField.enumRelationType;
 import com.bonitasoft.custompage.snowmobile.JdbcTable.JdbcColumn;
 import com.bonitasoft.custompage.snowmobile.JdbcTable.TableListOfColums;
@@ -251,7 +247,7 @@ public class SnowMobileAccess {
 
         Connection con = null;
         try {
-            con = getConnection();
+            con = BonitaEngineConnection.getBusinessConnection();
 
             if (con == null) {
                 operationStatus.addMsg("Can't connect Datasource");
@@ -271,10 +267,8 @@ public class SnowMobileAccess {
                 try {
                     con.close();
                 } catch (Exception e) {
-                } ;
+                } 
         }
-        return;
-
     }
 
     /**
@@ -332,7 +326,7 @@ public class SnowMobileAccess {
         final GeneratorSql generatorSql = new GeneratorSql(parametersCalcul, bdmContent, jdbcModel, operationStatus);
         final Map<String, JdbcTable> mapMetaModelTable = jdbcModel.getSetTables();
 
-        List<JdbcTable> listTablesSorted = new ArrayList<JdbcTable>();
+        List<JdbcTable> listTablesSorted = new ArrayList<>();
         listTablesSorted.addAll(mapMetaModelTable.values());
         Collections.sort(listTablesSorted, new Comparator<JdbcTable>()
         {
@@ -349,7 +343,7 @@ public class SnowMobileAccess {
             operationStatus.addDatabaseStructure("-- Table "+jdbcTable.getTableName()+ "(");
              
             // get the columns, and sort them
-            List<JdbcColumn> listColumnsSorted= new ArrayList<JdbcTable.JdbcColumn>();
+            List<JdbcColumn> listColumnsSorted= new ArrayList<>();
             listColumnsSorted.addAll(jdbcTable.getListColumns() );
             
             Collections.sort(listColumnsSorted, new Comparator<JdbcColumn>()
@@ -778,7 +772,7 @@ public class SnowMobileAccess {
 
             // is some field does not exist in the Bdm ?
             // add all the fields from the COMPOSITION
-            final HashSet<String> listOfCompositionField = new HashSet<String>();
+            final HashSet<String> listOfCompositionField = new HashSet<>();
             // FatherTable.fieldRelation ==> Child
             for (final BdmBusinessObject bdmBusinessObjectFather : bdmBusinessObject.getBusinessFather().values()) {
 
@@ -810,7 +804,7 @@ public class SnowMobileAccess {
 
         // Now delete all non needed table
         // calcul all table
-        final HashSet<String> setTableFromModel = new HashSet<String>();
+        final HashSet<String> setTableFromModel = new HashSet<>();
         for (final BdmBusinessObject bdmBusinessObject : bdmContent.getListBdmBusinessObject().values()) {
             setTableFromModel.add(bdmBusinessObject.getSqlTableName());
             // search all collection
@@ -822,7 +816,7 @@ public class SnowMobileAccess {
         }
 
         // build the list
-        final HashSet<String> listTables = new HashSet<String>();
+        final HashSet<String> listTables = new HashSet<>();
         for (final JdbcTable jdbcTable : jdbcModel.getSetTables().values()) {
             listTables.add(jdbcTable.getTableName());
             for (final JdbcTable jdbcSubTable : jdbcTable.getMapTables().values()) {
@@ -844,7 +838,6 @@ public class SnowMobileAccess {
             }
         }
 
-        return;
     }
 
     /* ******************************************************************************** */
@@ -927,8 +920,8 @@ public class SnowMobileAccess {
         // / first, is the BdmList exist ?
         for (final BdmListOfFields bdmItem : bdmList) {
             // is this item exist ? do
-            final TableListOfColums tableItem = jdbcList.get(bdmItem.getSqlName());
-            if (tableItem == null) {
+            ListComparaisonResult compareList = searchListExist( bdmItem, jdbcList);
+            if (compareList.tableListOfColumns == null) {
                 // create it !
                 if (isIndex) {
                     operationStatus.addDeltaEvent(bdmBusinessObject, null, new BEvent(EVENT_INDEX_CREATE, "Index[" + bdmItem.name + "] (" + bdmItem.getListFields() + ")"), TypeMsg.ADD);
@@ -938,15 +931,15 @@ public class SnowMobileAccess {
                     generatorSql.sqlCreateConstraint(bdmItem);
                 }
             } else {
-                if (!compareList(bdmItem, tableItem)) {
+                if (compareList.contentIsDifferent) {
                     // change it !
                     if (isIndex) {
                         operationStatus.addDeltaEvent(bdmBusinessObject, null,
-                                new BEvent(EVENT_INDEX_CHANGE, "Index change[" + bdmItem.name + "] : " + tableItem.toString() + "->" + bdmItem.toString()), TypeMsg.ALTER);
+                                new BEvent(EVENT_INDEX_CHANGE, "Index change[" + bdmItem.name + "] : " + compareList.tableListOfColumns.toString() + "->" + bdmItem.toString()), TypeMsg.ALTER);
                         generatorSql.sqlDropIndex(bdmItem.getBusinessObject().getSqlTableName(), bdmItem.name);
                         generatorSql.sqlCreateIndex(bdmItem);
                     } else {
-                        operationStatus.addDeltaEvent(bdmBusinessObject, null, new BEvent(EVENT_CONSTRAINT_CHANGE, "Constraints change[" + bdmItem.name + "] : " + tableItem.toString() + "->" + bdmItem.toString()), TypeMsg.ALTER);
+                        operationStatus.addDeltaEvent(bdmBusinessObject, null, new BEvent(EVENT_CONSTRAINT_CHANGE, "Constraints change[" + bdmItem.name + "] : " + compareList.tableListOfColumns.toString() + "->" + bdmItem.toString()), TypeMsg.ALTER);
                         generatorSql.sqlDropConstraint(bdmBusinessObject.getSqlTableName(), bdmItem.name);
                         generatorSql.sqlCreateConstraint(bdmItem);
                     }
@@ -969,6 +962,14 @@ public class SnowMobileAccess {
                     exist = true;
                 }
             }
+            
+            /* if the index is a link to an another table, then index is acceptable */
+            if (tableItem.isIndex && tableItem.getListColumns().size() == 1) {
+                String colName = tableItem.getListColumns().iterator().next();
+                if (colName.toLowerCase().endsWith(GeneratorSql.cstSuffixColumnPid.toLowerCase()))
+                    exist=true;
+            }
+
             if (!exist) {
                 if (isIndex) {
                     operationStatus.addDeltaEvent(bdmBusinessObject, null, new BEvent(EVENT_INDEX_DISEAPEAR, "Index[" + tableItem.name + "] (" + tableItem.getListColumns() + ")"), TypeMsg.DROP);
@@ -982,33 +983,7 @@ public class SnowMobileAccess {
         }
     }
 
-    /**
-     * compare index : the list of col must the the same.
-     *
-     * @param bdmIndex
-     * @param tableIndex
-     * @return
-     */
-    private boolean compareList(final BdmListOfFields bdmIndex, final TableListOfColums tableIndex) {
-        if (bdmIndex.getListFields().size() != tableIndex.getListColumns().size()) {
-            return false;
-        }
-        for (final String fieldIndexName : bdmIndex.getListFields()) {
-            // compare with the bdmField.getSqlColName : the field maybe customerId but if this is a Relation field, the sqlField is customerId_pid
-            final BdmField bdmField = bdmIndex.getBusinessObject().getFieldByFieldName(fieldIndexName);
-            if (bdmField != null) {
-                if (!tableIndex.getListColumns().contains(bdmField.getSqlColName())) {
-                    return false;
-                }
-            } else {
-                if (!tableIndex.getListColumns().contains(fieldIndexName)) {
-                    return false;
-                }
-
-            }
-        }
-        return true;
-    }
+   
 
     /* ******************************************************************************** */
     /*                                                                                  */
@@ -1020,11 +995,11 @@ public class SnowMobileAccess {
     /**
      * @return
      */
-    public static HashMap<String, Object> getDatabaseInformation() {
-        final HashMap<String, Object> result = new HashMap<String, Object>();
+    public static Map<String, Object> getDatabaseInformation() {
+        final HashMap<String, Object> result = new HashMap<>();
         Connection con = null;
         try {
-            con = getConnection();
+            con = BonitaEngineConnection.getBusinessConnection();
 
             if (con == null) {
                 result.put("errormessage",
@@ -1051,31 +1026,37 @@ public class SnowMobileAccess {
         return result;
     }
 
-    private static Connection getConnection() {
-        Context ctx = null;
-        try {
-            ctx = new InitialContext();
-        } catch (final Exception e) {
-            logger.info("Cant' get an InitialContext : can't access the datasource");
-            return null;
-        }
-
-        DataSource ds = null;
-        Connection con = null;
-        try {
-            ds = (DataSource) ctx.lookup("java:/comp/env/NotManagedBizDataDS");
-            con = ds.getConnection();
-            return con;
-        } catch (final Exception e) {
-        }
-        try {
-            if (ds == null) {
-                ds = (DataSource) ctx.lookup("java:jboss/datasources/NotManagedBizDataDS");
-                con = ds.getConnection();
-                return con;
-            }
-        } catch (final Exception e) {
-        } ;
-        return null;
+    
+    /**
+     * Search if the list exist in the tableListOfColumn, may be with the same name (but different content) or by a different name (but same content)
+     * @param bdmItem
+     * @param jdbcList
+     * @return
+     */
+    public class ListComparaisonResult{
+        public boolean contentIsDifferent=true;
+        TableListOfColums tableListOfColumns=null;
     }
+    private ListComparaisonResult searchListExist( BdmListOfFields bdmItem, Map<String, TableListOfColums> jdbcList) {
+        ListComparaisonResult listComparaisonResult = new ListComparaisonResult();
+        listComparaisonResult.tableListOfColumns = jdbcList.get(bdmItem.getSqlName());
+        if (listComparaisonResult.tableListOfColumns!=null) {
+            // same name, but same content ?
+            listComparaisonResult.contentIsDifferent = bdmItem.compareList(listComparaisonResult.tableListOfColumns);
+            return listComparaisonResult;
+        }
+        // ok, now the name is different, but it still exist?
+        for (TableListOfColums compareList : jdbcList.values()) {
+            
+            if (bdmItem.compareList( compareList)) {
+                listComparaisonResult.tableListOfColumns= compareList;
+                listComparaisonResult.contentIsDifferent=false;
+                return listComparaisonResult;
+            }
+                
+        }
+        return listComparaisonResult;
+    }
+    
+    
 }
