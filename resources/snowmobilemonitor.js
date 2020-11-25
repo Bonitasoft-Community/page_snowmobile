@@ -6,7 +6,7 @@
 (function() {
 
 
-var appCommand = angular.module('snowmobilemonitor', ['googlechart', 'ui.bootstrap','ngSanitize', 'angularFileUpload']);
+var appCommand = angular.module('snowmobilemonitor', ['googlechart', 'ui.bootstrap','ngSanitize', 'angularFileUpload', 'ngCookies']);
 
 // Constant used to specify resource base path (facilitates integration into a Bonita custom page)
 appCommand.constant('RESOURCE_PATH', 'pageResource?page=custompage_snowmobilemonitor&location=');
@@ -22,7 +22,7 @@ appCommand.constant('RESOURCE_PATH', 'pageResource?page=custompage_snowmobilemon
 	   
 // User app list controller
 appCommand.controller('SnowMobileController', 
-	function ( $http, $scope, $upload, $sce) {
+	function ( $http, $scope, $upload, $sce, $cookies) {
 		$('#calculupdatewait').hide();
 		
 		this.bdmfile ="";
@@ -36,6 +36,17 @@ appCommand.controller('SnowMobileController',
 		this.showDelta=true;
 		this.showDetail=true;
 		
+		this.getHttpConfig = function () {
+			var additionalHeaders = {};
+			var csrfToken = $cookies.get('X-Bonita-API-Token');
+			if (csrfToken) {
+				additionalHeaders ['X-Bonita-API-Token'] = csrfToken;
+			}
+			var config= {"headers": additionalHeaders};
+			console.log("GetHttpConfig : "+angular.toJson( config));
+			return config;
+		}
+		
 		this.info = function(  )
 		{
 			var self=this;
@@ -45,7 +56,7 @@ appCommand.controller('SnowMobileController',
 			var t = new Date();
 			
 			var url='?page=custompage_snowmobile&action=info&t='+t;
-			$http.get( url )
+			$http.get( url, this.getHttpConfig() )
 					.success( function ( jsonResult, statusHttp, headers, config ) {
 						
 						// connection is lost ?
@@ -85,7 +96,7 @@ appCommand.controller('SnowMobileController',
 			url += "&t="+t;
 		
 				
-			$http.get( url )
+			$http.get( url, this.getHttpConfig() )
 				.success( function ( jsonResult, statusHttp, headers, config ) {
 					
 					// connection is lost ?

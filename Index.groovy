@@ -63,175 +63,178 @@ import org.bonitasoft.log.event.BEventFactory;
 import com.bonitasoft.custompage.snowmobile.SnowMobileAccess;
 import com.bonitasoft.custompage.snowmobile.OperationStatus;
 import com.bonitasoft.custompage.snowmobile.SnowMobileAccess.ParametersCalcul;
- 
+
 public class Index implements PageController {
 
-	@Override
-	public void doGet(HttpServletRequest request, HttpServletResponse response, PageResourceProvider pageResourceProvider, PageContext pageContext) {
-	
-		Logger logger= Logger.getLogger("org.bonitasoft");
-		
-		
-		try {
-			def String indexContent;
-			pageResourceProvider.getResourceAsStream("Index.groovy").withStream { InputStream s-> indexContent = s.getText() };
-			response.setCharacterEncoding("UTF-8");
-			PrintWriter out = response.getWriter()
+    @Override
+    public void doGet(HttpServletRequest request, HttpServletResponse response, PageResourceProvider pageResourceProvider, PageContext pageContext) {
 
-			String action=request.getParameter("action");
-			String bdmfile = request.getParameter("bdmfile");
-			logger.info("#### SnowMobile:Groovy  action is["+action+"] bdmFile=["+bdmfile+"]");
-			if (action==null || action.length()==0 )
-			{
-				runTheBonitaIndexDoGet( request, response,pageResourceProvider,pageContext);
-				logger.info("#### SnowMobile:Groovy  - return resource");
-				return;
-			}
-			
-			logger.info("#### SnowMobile:Groovy  Check action now");
-			HashMap<String,Object> resultUpdate = new HashMap<String,Object>();
-				
-			if ("info".equals(action))
-			{
-				SnowMobileAccess snowMobileAccess = new SnowMobileAccess();
-				
-				resultUpdate = snowMobileAccess.getDatabaseInformation();
-				
-			}
-			else if ("calculupdate".equals(action))
-			{
-				logger.info("#### SnowMobile:Groovy sqlUpdate on bdmfile["+bdmfile+"]");
-				OperationStatus operationStatus = new OperationStatus();
-				SnowMobileAccess snowMobileAccess = new SnowMobileAccess();
-				
-				APISession apiSession = pageContext.getApiSession()
-				ProcessAPI processAPI = TenantAPIAccessor.getProcessAPI(apiSession);
-				snowMobileAccess.setContext( apiSession, pageResourceProvider.getPageDirectory(), processAPI);
-				
-				snowMobileAccess.setBdmFromFile(bdmfile, operationStatus);
-				logger.info("#### SnowMobile:Groovy BdmFile OperationStatus["+BEventFactory.getHtml(operationStatus.getErrors())+"]");
-				
-				snowMobileAccess.setDatamodelFromDatabaseSource("NotManagedBizDataDS", operationStatus);
-				logger.info("#### SnowMobile:Groovy Datasource OperationStatus["+BEventFactory.getHtml(operationStatus.getErrors())+"]");
+        Logger logger= Logger.getLogger("org.bonitasoft");
 
-				if (! operationStatus.isError())
-				{
-					ParametersCalcul parameter = new ParametersCalcul();
-					parameter.commentDropTable = true;
-					parameter.commentDropColumn = true;
-					parameter.commentDropIndex = true;
-					parameter.commentDropConstraint = true;
-					parameter.commentExtraDropTables = true;
-					
-					if ("true".equals(request.getParameter("includeDropTable")))
-					{
-						parameter.commentDropTable = false;
-						parameter.commentExtraDropTables = false;
-					}
-					if ("true".equals(request.getParameter("includeDropContent")))
-					{
-						parameter.commentDropColumn = false;
-						parameter.commentDropIndex = false;
-						parameter.commentDropConstraint = false;
-					}
+
+        try {
+            def String indexContent;
+            pageResourceProvider.getResourceAsStream("Index.groovy").withStream { InputStream s-> indexContent = s.getText() };
+            response.setCharacterEncoding("UTF-8");
+            PrintWriter out = response.getWriter()
+
+            String action=request.getParameter("action");
+            String bdmfile = request.getParameter("bdmfile");
+            logger.info("#### SnowMobile:Groovy  action is["+action+"] bdmFile=["+bdmfile+"]");
+            if (action==null || action.length()==0 ) {
+                runTheBonitaIndexDoGet( request, response,pageResourceProvider,pageContext);
+                logger.info("#### SnowMobile:Groovy  - return resource");
+                return;
+            }
+
+            logger.info("#### SnowMobile:Groovy  Check action now");
+            HashMap<String,Object> resultUpdate = new HashMap<String,Object>();
+
+            if ("info".equals(action)) {
+                //Make sure no action is executed if the CSRF protection is active and the request header is invalid
+                if (! TokenValidator.checkCSRFToken(request, response)) {
+                    return ;
+                }
+                SnowMobileAccess snowMobileAccess = new SnowMobileAccess();
+
+                resultUpdate = snowMobileAccess.getDatabaseInformation();
+
+            }
+            else if ("calculupdate".equals(action))
+            {
+                //Make sure no action is executed if the CSRF protection is active and the request header is invalid
+                if (! TokenValidator.checkCSRFToken(request, response)) {
+                    return;
+                }
+                
+                logger.info("#### SnowMobile:Groovy sqlUpdate on bdmfile["+bdmfile+"]");
+                OperationStatus operationStatus = new OperationStatus();
+                SnowMobileAccess snowMobileAccess = new SnowMobileAccess();
+
+                APISession apiSession = pageContext.getApiSession()
+                ProcessAPI processAPI = TenantAPIAccessor.getProcessAPI(apiSession);
+                snowMobileAccess.setContext( apiSession, pageResourceProvider.getPageDirectory(), processAPI);
+
+                snowMobileAccess.setBdmFromFile(bdmfile, operationStatus);
+                logger.info("#### SnowMobile:Groovy BdmFile OperationStatus["+BEventFactory.getHtml(operationStatus.getErrors())+"]");
+
+                snowMobileAccess.setDatamodelFromDatabaseSource("NotManagedBizDataDS", operationStatus);
+                logger.info("#### SnowMobile:Groovy Datasource OperationStatus["+BEventFactory.getHtml(operationStatus.getErrors())+"]");
+
+                if (! operationStatus.isError())
+                {
+                    ParametersCalcul parameter = new ParametersCalcul();
+                    parameter.commentDropTable = true;
+                    parameter.commentDropColumn = true;
+                    parameter.commentDropIndex = true;
+                    parameter.commentDropConstraint = true;
+                    parameter.commentExtraDropTables = true;
+
+                    if ("true".equals(request.getParameter("includeDropTable")))
+                    {
+                        parameter.commentDropTable = false;
+                        parameter.commentExtraDropTables = false;
+                    }
+                    if ("true".equals(request.getParameter("includeDropContent")))
+                    {
+                        parameter.commentDropColumn = false;
+                        parameter.commentDropIndex = false;
+                        parameter.commentDropConstraint = false;
+                    }
                     String policy = request.getParameter("policyChangeColumnType");
                     if (policy != null)
                     {
                         parameter.policyChangeColumnType = SnowMobileAccess.POLICY_CHANGE_TYPE.valueOf( policy.toUpperCase() );
                     }
-					snowMobileAccess.calculSqlScript(parameter, operationStatus);
-				}	
-				resultUpdate.put("sqlupdate", 		    operationStatus.getSql());
-				resultUpdate.put("errormessage", 	    BEventFactory.getHtml( operationStatus.getErrors()));
-				resultUpdate.put("deltamessage", 	    operationStatus.getDeltaMsgList());
-				resultUpdate.put("message", 	        operationStatus.getMsg());
+                    snowMobileAccess.calculSqlScript(parameter, operationStatus);
+                }
+                resultUpdate.put("sqlupdate", 		    operationStatus.getSql());
+                resultUpdate.put("errormessage", 	    BEventFactory.getHtml( operationStatus.getErrors()));
+                resultUpdate.put("deltamessage", 	    operationStatus.getDeltaMsgList());
+                resultUpdate.put("message", 	        operationStatus.getMsg());
                 resultUpdate.put("databaseStructure",   operationStatus.getDatabaseStructure());
-			}
-			
-			String jsonDetailsSt = JSONValue.toJSONString( resultUpdate );
-			logger.info("#### SnowMobile:Groovy FinalResult ["+ jsonDetailsSt+"]");
-				
-			out.write( jsonDetailsSt );	
-			out.flush();
-			out.close();
-			return;
-			
-			
-			out.write( "Unknow command" );
-			out.flush();
-			out.close();
-			return;
-		} catch (Exception e) {
-			StringWriter sw = new StringWriter();
-			e.printStackTrace(new PrintWriter(sw));
-			String exceptionDetails = sw.toString();
-			logger.severe("#### SnowMobile:Groovy Exception ["+e.toString()+"] at "+exceptionDetails);
-		}
-	}
+            }
 
-	
-	/** -------------------------------------------------------------------------
-	 *
-	 *getIntegerParameter
-	 * 
-	 */
-	private int getIntegerParameter(HttpServletRequest request, String paramName, int defaultValue)
-	{
-		String valueParamSt = request.getParameter(paramName);
-		if (valueParamSt==null  || valueParamSt.length()==0)
-		{
-			return defaultValue;
-		}
-		int valueParam=defaultValue;
-		try
-		{
-			valueParam = Integer.valueOf( valueParamSt );
-		}
-		catch( Exception e)
-		{
-			StringWriter sw = new StringWriter();
-			e.printStackTrace(new PrintWriter(sw));
-			String exceptionDetails = sw.toString();
-			
-			logger.severe("#### SnowMobile:Groovy LongBoard: getinteger : Exception "+e.toString()+" on  ["+valueParamSt+"] at "+exceptionDetails );
-			valueParam= defaultValue;
-		}
-		return valueParam;
-	}
-	
-	/** -------------------------------------------------------------------------
-	 *
-	 *runTheBonitaIndexDoGet
-	 * 
-	 */
-	private void runTheBonitaIndexDoGet(HttpServletRequest request, HttpServletResponse response, PageResourceProvider pageResourceProvider, PageContext pageContext) {
-		try {
-			def String indexContent;
-			pageResourceProvider.getResourceAsStream("index.html").withStream { InputStream s->
-					indexContent = s.getText()
-			}
-			 File pageDirectory = pageResourceProvider.getPageDirectory();
-	      
-			// def String pageResource="pageResource?&page="+ request.getParameter("page")+"&location=";
-			// indexContent= indexContent.replace("@_USER_LOCALE_@", request.getParameter("locale"));
-			// indexContent= indexContent.replace("@_PAGE_RESOURCE_@", pageResource);
-		   indexContent= indexContent.replace("@_CURRENTTIMEMILIS_@", String.valueOf(System.currentTimeMillis()));
-       indexContent= indexContent.replace("@_PAGEDIRECTORY_@", pageDirectory.getAbsolutePath()) ;
+            String jsonDetailsSt = JSONValue.toJSONString( resultUpdate );
+            logger.info("#### SnowMobile:Groovy FinalResult ["+ jsonDetailsSt+"]");
 
-			response.setCharacterEncoding("UTF-8");
-			PrintWriter out = response.getWriter();
-			out.print(indexContent);
-			out.flush();
-			out.close();
-		} catch (Exception e) {
-      StringWriter sw = new StringWriter();
-      e.printStackTrace(new PrintWriter(sw));
-      String exceptionDetails = sw.toString();
-      
-      logger.severe("#### SnowMobile:Groovy LongBoard: getinteger : Exception "+e.toString()+" at "+exceptionDetails );
-    
-		
-		}
-	}
+            out.write( jsonDetailsSt );
+            out.flush();
+            out.close();
+            return;
+
+
+        } catch (Exception e) {
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            String exceptionDetails = sw.toString();
+            logger.severe("#### SnowMobile:Groovy Exception ["+e.toString()+"] at "+exceptionDetails);
+        }
+    }
+
+
+    /** -------------------------------------------------------------------------
+     *
+     *getIntegerParameter
+     * 
+     */
+    private int getIntegerParameter(HttpServletRequest request, String paramName, int defaultValue)
+    {
+        String valueParamSt = request.getParameter(paramName);
+        if (valueParamSt==null  || valueParamSt.length()==0)
+        {
+            return defaultValue;
+        }
+        int valueParam=defaultValue;
+        try
+        {
+            valueParam = Integer.valueOf( valueParamSt );
+        }
+        catch( Exception e)
+        {
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            String exceptionDetails = sw.toString();
+
+            logger.severe("#### SnowMobile:Groovy LongBoard: getinteger : Exception "+e.toString()+" on  ["+valueParamSt+"] at "+exceptionDetails );
+            valueParam= defaultValue;
+        }
+        return valueParam;
+    }
+
+    /** -------------------------------------------------------------------------
+     *
+     *runTheBonitaIndexDoGet
+     * 
+     */
+    private void runTheBonitaIndexDoGet(HttpServletRequest request, HttpServletResponse response, PageResourceProvider pageResourceProvider, PageContext pageContext) {
+        try {
+            def String indexContent;
+            pageResourceProvider.getResourceAsStream("index.html").withStream { InputStream s->
+                indexContent = s.getText()
+            }
+            File pageDirectory = pageResourceProvider.getPageDirectory();
+
+            // def String pageResource="pageResource?&page="+ request.getParameter("page")+"&location=";
+            // indexContent= indexContent.replace("@_USER_LOCALE_@", request.getParameter("locale"));
+            // indexContent= indexContent.replace("@_PAGE_RESOURCE_@", pageResource);
+            indexContent= indexContent.replace("@_CURRENTTIMEMILIS_@", String.valueOf(System.currentTimeMillis()));
+            indexContent= indexContent.replace("@_PAGEDIRECTORY_@", pageDirectory.getAbsolutePath()) ;
+
+            response.setCharacterEncoding("UTF-8");
+            PrintWriter out = response.getWriter();
+            out.print(indexContent);
+            out.flush();
+            out.close();
+        } catch (Exception e) {
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            String exceptionDetails = sw.toString();
+
+            logger.severe("#### SnowMobile:Groovy LongBoard: getinteger : Exception "+e.toString()+" at "+exceptionDetails );
+
+
+        }
+    }
 
 }
