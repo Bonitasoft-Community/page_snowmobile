@@ -58,7 +58,11 @@ public class OperationStatus {
 
         listErrorsEvent.add(event);
     }
-
+    public void addErrorEvents(final List<BEvent> listEvents) {
+        for (BEvent event : listEvents)
+            addErrorEvent(event);
+    }
+    
     public boolean isError() {
         return BEventFactory.isError(listErrorsEvent);
     }

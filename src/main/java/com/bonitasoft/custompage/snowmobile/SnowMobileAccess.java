@@ -324,6 +324,8 @@ public class SnowMobileAccess {
      */
     public void calculSqlScript(final ParametersCalcul parametersCalcul, final OperationStatus operationStatus) {
         final GeneratorSql generatorSql = new GeneratorSql(parametersCalcul, bdmContent, jdbcModel, operationStatus);
+        generatorSql.initialise();
+        
         final Map<String, JdbcTable> mapMetaModelTable = jdbcModel.getSetTables();
 
         List<JdbcTable> listTablesSorted = new ArrayList<>();
@@ -751,7 +753,7 @@ public class SnowMobileAccess {
                     // the table name is businessData_ubname
                     // like "customer_adress", so we have to extract the sub
                     // field name
-                    final BdmField bdmField = bdmBusinessObject.getFieldBySqlColumnName(jdbcTableCollection.getChildTableName());
+                    final BdmField bdmField = bdmBusinessObject.getFieldBySqlColumnName(jdbcTableCollection.getChildTableName(), true);
                     if (bdmField == null || !bdmField.isCollection()) {
                         operationStatus.addDeltaEvent(bdmBusinessObject, bdmField, new BEvent(EVENT_COLLECTION_DISEAPEAR, "Drop collection [" + jdbcTableCollection.getChildTableName() + "]"), TypeMsg.DROP);
                         generatorSql.sqlDropTable(jdbcTableCollection.getTableName());
@@ -791,7 +793,7 @@ public class SnowMobileAccess {
             // check fields in the BDM, not anymore used
             if (jdbcTable != null) {
                 for (final JdbcColumn jdbcColumn : jdbcTable.getListColumns()) {
-                    if (bdmBusinessObject.getFieldBySqlColumnName(jdbcColumn.getColName()) == null && !listOfCompositionField.contains(jdbcColumn.getColName())) {
+                    if (bdmBusinessObject.getFieldBySqlColumnName(jdbcColumn.getColName(), false) == null && !listOfCompositionField.contains(jdbcColumn.getColName())) {
                         operationStatus.addDeltaEvent(bdmBusinessObject, null, new BEvent(EVENT_FIELD_DISEAPEAR, "Drop column [" + jdbcColumn.getColName() + "]"), TypeMsg.DROP);
                         if (jdbcColumn.contraintsName != null) {
                             generatorSql.sqlDropConstraint(jdbcTable.getTableName(), jdbcColumn.contraintsName);
@@ -832,9 +834,20 @@ public class SnowMobileAccess {
             }
 
             if (!setTableFromModel.contains(tableName)) {
-                operationStatus.addDeltaEvent(null, null, new BEvent(EVENT_TABLE_DISEAPEAR, "Drop table[" + tableName + "]"), TypeMsg.DROP);
-
-                generatorSql.sqlDropTable(tableName, parametersCalcul.commentExtraDropTables);
+                
+                // attention, H2 may trunc some table name
+                // example from the model (setTableFromModel)  "promotion_promotionressources"
+                // on the database(tableName) :      "promotion_promotionresso"
+                boolean exist=false;
+                if (tableName.length()>20) {
+                    for (String tableInModel : setTableFromModel)
+                        if (tableInModel.toUpperCase().startsWith(tableName.toUpperCase()))
+                            exist=true;
+                }
+                if (!exist) {
+                    operationStatus.addDeltaEvent(null, null, new BEvent(EVENT_TABLE_DISEAPEAR, "Drop table[" + tableName + "]"), TypeMsg.DROP);
+                    generatorSql.sqlDropTable(tableName, parametersCalcul.commentExtraDropTables);
+                }
             }
         }
 
@@ -884,9 +897,16 @@ public class SnowMobileAccess {
             }
         }
         else {
-            if (!generatorSql.getSqlType(bdmField).equals(generatorSql.getSqlType(jdbcColumn))) {
-                currentComparaison |= EnumFieldComparaisonTYPECHANGE;
-        }
+            // multiple type can match the same column
+            List<String> listAllTypes = generatorSql.getAllSqlTypes(jdbcColumn, true);
+            boolean exist=false;
+            for (String oneType : listAllTypes) {
+                if (generatorSql.getSqlType(bdmField).equals(oneType)) {
+                    exist=true;
+                }
+            }
+            if (!exist)
+                currentComparaison |= EnumFieldComparaisonTYPECHANGE;        
         }
         if (bdmField.isRelationField && !jdbcColumn.isForeignKey) {
             currentComparaison |= EnumFieldComparaisonBDMISAFOREIGNKEY;
@@ -958,7 +978,9 @@ public class SnowMobileAccess {
             }
 
             for (final BdmListOfFields bdmIndex : bdmList) {
-                if (tableItem.name.equals(bdmIndex.getSqlName())) {
+                // Hibernate create different name - for example the bdmIndex "nameconstraint" may have a name "nameconstraint_index_b"
+                if (tableItem.name.equals(bdmIndex.getSqlName())
+                        || tableItem.name.startsWith(bdmIndex.getSqlName())) {
                     exist = true;
                 }
             }

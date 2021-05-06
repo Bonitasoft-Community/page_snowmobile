@@ -301,11 +301,20 @@ public class BdmBusinessObject {
         return listFields;
     }
 
-    public BdmField getFieldBySqlColumnName(final String colName) {
+    public BdmField getFieldBySqlColumnName(final String colName, boolean acceptStartBy) {
         for (final BdmField bdmField : listFields) {
             if (bdmField.getSqlColName().equalsIgnoreCase(colName)) {
                 return bdmField;
             }
+        }
+        // second chance : the BDM tronque the name : for example, field is "promotionressources" where the colName detected in the table is "promotionres"
+        if (acceptStartBy) {
+            for (final BdmField bdmField : listFields) {
+                if (bdmField.getSqlColName().toUpperCase().startsWith(colName.toUpperCase())) {
+                    return bdmField;
+                }
+            }
+            
         }
         return null;
     }
