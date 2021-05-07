@@ -793,7 +793,9 @@ public class SnowMobileAccess {
             // check fields in the BDM, not anymore used
             if (jdbcTable != null) {
                 for (final JdbcColumn jdbcColumn : jdbcTable.getListColumns()) {
-                    if (bdmBusinessObject.getFieldBySqlColumnName(jdbcColumn.getColName(), false) == null && !listOfCompositionField.contains(jdbcColumn.getColName())) {
+                    BdmField bdmField = bdmBusinessObject.getFieldBySqlColumnName(jdbcColumn.getColName(), false);
+                    if ((bdmField == null && !listOfCompositionField.contains(jdbcColumn.getColName()))
+                            || (bdmField!=null && bdmField.collection)) {
                         operationStatus.addDeltaEvent(bdmBusinessObject, null, new BEvent(EVENT_FIELD_DISEAPEAR, "Drop column [" + jdbcColumn.getColName() + "]"), TypeMsg.DROP);
                         if (jdbcColumn.contraintsName != null) {
                             generatorSql.sqlDropConstraint(jdbcTable.getTableName(), jdbcColumn.contraintsName);
